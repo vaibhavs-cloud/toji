@@ -29,6 +29,29 @@
 
 </div>
 
+## Toji (this fork)
+
+This repository is the Toji fork of openGym: the same training log (workouts, progression, rest
+timer, recovery, AI coach, offline first) in the "Ink and Blood" theme, plus the distraction
+blocker, the voice tools and the Toji art.
+
+| | |
+|---|---|
+| Download the app | <https://vaibhavs-cloud.github.io/toji/> (redirects to the newest APK) |
+| Every build, newest first | <https://vaibhavs-cloud.github.io/toji/versions.html> |
+| Releases | <https://github.com/vaibhavs-cloud/toji/releases> |
+| License | AGPL-3.0-or-later: the APK is built from the source in this repository |
+
+Publishing a patched build: build and sign the APK, then publish it as a release with the asset
+named `Toji.apk`:
+
+```bash
+gh release create v1.4.5 Toji.apk "Toji 1.4.5" --repo vaibhavs-cloud/toji
+```
+
+The download page always points at `releases/latest`, so a new build is what the link serves from
+then on. The app's own updater (`frontend/src/lib/update.js`) reads the same releases.
+
 ## Why openGym
 
 Most workout apps keep your data on their servers, push you towards a subscription, or vanish

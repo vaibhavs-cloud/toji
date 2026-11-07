@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Toji — all versions</title>
+<style>
+  :root { --ink: #0b0b0d; --paper: #ece7df; --muted: #8f8a83; --blood: #b3121f; --rule: #26262c; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--ink); color: var(--paper); min-height: 100vh;
+    font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif; -webkit-font-smoothing: antialiased;
+  }
+  .wrap { width: min(760px, 92vw); margin: 0 auto; padding: 56px 0 80px; }
+  .kicker { font-size: 12px; letter-spacing: .34em; text-transform: uppercase; color: var(--muted); margin: 0 0 16px; }
+  h1 { font-size: clamp(40px, 8vw, 68px); line-height: .9; letter-spacing: -.03em; margin: 0 0 12px; text-transform: uppercase; font-weight: 800; }
+  .rule { height: 3px; background: var(--blood); width: 84px; margin: 20px 0 20px; }
+  .back { color: var(--muted); font-size: 14px; }
+  .back a { color: var(--paper); }
+  ul { list-style: none; padding: 0; margin: 34px 0 0; }
+  li { border-top: 1px solid var(--rule); padding: 20px 0; display: flex; gap: 18px; align-items: baseline; flex-wrap: wrap; }
+  li:last-child { border-bottom: 1px solid var(--rule); }
+  .tagname { font-size: 20px; font-weight: 700; min-width: 120px; }
+  .when { color: var(--muted); font-size: 13px; }
+  .link { margin-left: auto; color: var(--blood); font-weight: 700; text-decoration: none; font-size: 15px; }
+  .link:hover { text-decoration: underline; }
+  .empty { color: var(--muted); margin-top: 30px; }
+</style>
+</head>
+<body>
+  <main class="wrap">
+    <p class="kicker">Every build</p>
+    <h1>Versions</h1>
+    <div class="rule"></div>
+    <p class="back">Newest first. <a href="./">Back to the download page</a>.</p>
+    <ul id="list"><li class="empty">Loading the releases…</li></ul>
+  </main>
+
+<script>
+  fetch('https://api.github.com/repos/vaibhavs-cloud/toji/releases?per_page=50', {
+    headers: { Accept: 'application/vnd.github+json' }
+  }).then(function (r) { return r.ok ? r.json() : []; }).then(function (rels) {
+    var list = document.getElementById('list');
+    list.innerHTML = '';
+    if (!rels.length) { list.innerHTML = '<li class="empty">No releases yet.</li>'; return; }
+    rels.forEach(function (rel) {
+      var li = document.createElement('li');
+      var tag = document.createElement('span');
+      tag.className = 'tagname';
+      tag.textContent = rel.tag_name;
+      var when = document.createElement('span');
+      when.className = 'when';
+      when.textContent = rel.published_at ? new Date(rel.published_at).toLocaleString() : '';
+      li.appendChild(tag);
+      li.appendChild(when);
+      (rel.assets || []).filter(function (a) { return /\.apk$/i.test(a.name); }).forEach(function (apk) {
+        var a = document.createElement('a');
+        a.className = 'link';
+        a.href = apk.browser_download_url;
+        a.textContent = 'Download ' + apk.name;
+        li.appendChild(a);
+      });
+      list.appendChild(li);
+    });
+  }).catch(function () {
+    document.getElementById('list').innerHTML = '<li class="empty">Could not reach the GitHub API.</li>';
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Toji — download</title>
+<meta name="description" content="Download the Toji training app (APK).">
+<meta http-equiv="refresh" content="3; url=https://github.com/vaibhavs-cloud/toji/releases/latest/download/Toji.apk">
+<link rel="canonical" href="https://vaibhavs-cloud.github.io/toji/">
+<style>
+  :root {
+    --ink: #0b0b0d;
+    --ink-2: #141418;
+    --paper: #ece7df;
+    --muted: #8f8a83;
+    --blood: #b3121f;
+    --rule: #26262c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { width: min(640px, 92vw); padding: 48px 0; }
+  .kicker {
+    font-size: 12px;
+    letter-spacing: .34em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 18px;
+  }
+  h1 {
+    font-size: clamp(56px, 13vw, 108px);
+    line-height: .86;
+    letter-spacing: -.04em;
+    margin: 0 0 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+  .rule { height: 3px; background: var(--blood); width: 96px; margin: 22px 0 22px; }
+  .tag { color: var(--muted); font-size: 15px; line-height: 1.6; margin: 0 0 30px; max-width: 46ch; }
+  .tag b { color: var(--paper); font-weight: 600; }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--blood);
+    color: #fff;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: .01em;
+    padding: 18px 30px;
+    border-radius: 2px;
+    transition: transform .12s ease, filter .12s ease;
+  }
+  .btn:hover { filter: brightness(1.12); transform: translateY(-1px); }
+  .meta {
+    margin-top: 34px;
+    border-top: 1px solid var(--rule);
+    padding-top: 18px;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.9;
+  }
+  .meta a { color: var(--paper); }
+  .count { color: var(--blood); font-weight: 700; }
+  @media (prefers-reduced-motion: reduce) { .btn { transition: none; } }
+</style>
+</head>
+<body>
+  <main class="wrap">
+    <p class="kicker">Zero cursed energy · all physical</p>
+    <h1>Toji</h1>
+    <div class="rule"></div>
+    <p class="tag">
+      Your download starts in a moment. <b>Toji</b> is a self-hosted training log:
+      strength sessions, progression, rest timer, recovery and an AI coach that stays on your machine.
+    </p>
+    <a class="btn" id="dl" href="https://github.com/vaibhavs-cloud/toji/releases/latest/download/Toji.apk">
+      Download the APK
+    </a>
+    <div class="meta">
+      <div>Latest: <span id="ver">…</span> · <span id="size">…</span></div>
+      <div>Older builds and patched versions: <a href="./versions.html">all versions</a> · <a href="https://github.com/vaibhavs-cloud/toji/releases">releases</a></div>
+      <div>Source (AGPL-3.0): <a href="https://github.com/vaibhavs-cloud/toji">github.com/vaibhavs-cloud/toji</a></div>
+      <div id="status"></div>
+    </div>
+  </main>
+
+<script>
+  var TARGET = 'https://github.com/vaibhavs-cloud/toji/releases/latest/download/Toji.apk';
+
+  function human(bytes) {
+    if (!bytes) return '';
+    var mb = bytes / 1048576;
+    return mb >= 1 ? mb.toFixed(1) + ' MB' : (bytes / 1024).toFixed(0) + ' KB';
+  }
+
+  fetch('https://api.github.com/repos/vaibhavs-cloud/toji/releases/latest', {
+    headers: { Accept: 'application/vnd.github+json' }
+  }).then(function (r) { return r.ok ? r.json() : null; }).then(function (rel) {
+    if (!rel) return;
+    document.getElementById('ver').textContent = rel.tag_name;
+    var apk = (rel.assets || []).filter(function (a) { return /\.apk$/i.test(a.name); })[0];
+    if (apk) {
+      document.getElementById('size').textContent = human(apk.size);
+      document.getElementById('dl').href = apk.browser_download_url;
+    }
+    document.getElementById('status').innerHTML =
+      'Downloading the newest build… <span class="count">' +
+      (rel.assets || []).filter(function (a) { return /\.apk$/i.test(a.name); }).length +
+      ' APK(s) in this release.</span>';
+  }).catch(function () {
+    document.getElementById('status').textContent = 'Taking you to the download…';
+  });
+
+  setTimeout(function () { window.location.href = TARGET; }, 3000);
+</script>
+</body>
+</html>
