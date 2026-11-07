@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/overlay_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/toji_void"
+    android:padding="24dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:background="@drawable/bg_manga_card"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- Manga Tag -->
+        <TextView
+            android:id="@+id/tv_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:background="@drawable/bg_manga_tag"
+            android:paddingStart="10dp"
+            android:paddingTop="3dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="3dp"
+            android:text="[ TOJI REST GUARD ]"
+            android:textColor="@color/toji_blood"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.1" />
+
+        <!-- Main Title -->
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:text="REST TIMER RUNNING"
+            android:textColor="@color/toji_text"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.05" />
+
+        <!-- Subtitle -->
+        <TextView
+            android:id="@+id/tv_subtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:text="Distractions are locked until recovery ends.\nReturn to Toji."
+            android:textColor="@color/toji_text_muted"
+            android:textSize="13sp"
+            android:lineSpacingExtra="3dp" />
+
+        <!-- Big Countdown -->
+        <TextView
+            android:id="@+id/tv_countdown"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="24dp"
+            android:gravity="center"
+            android:text="00:00"
+            android:textColor="@color/toji_text"
+            android:textSize="48sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.08" />
+
+        <!-- Blocked Package Name / Info -->
+        <TextView
+            android:id="@+id/tv_blocked_app"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="24dp"
+            android:gravity="center"
+            android:text="Rest timer still running — return to Toji"
+            android:textColor="@color/toji_blood"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <!-- Primary Action Button -->
+        <Button
+            android:id="@+id/btn_return_to_toji"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:background="@drawable/bg_manga_button"
+            android:text="RETURN TO TOJI"
+            android:textColor="@color/toji_text"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.08" />
+
+        <!-- Emergency / Bypass Action -->
+        <TextView
+            android:id="@+id/btn_emergency_exit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="16dp"
+            android:padding="8dp"
+            android:text="EMERGENCY BYPASS"
+            android:textColor="@color/toji_text_muted"
+            android:textSize="11sp"
+            android:letterSpacing="0.1" />
+
+    </LinearLayout>
+
+</FrameLayout>

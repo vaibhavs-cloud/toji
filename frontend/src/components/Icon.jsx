@@ -202,6 +202,8 @@ const P = {
   webhook: <><circle cx="12" cy="6.4" r="2.6" /><circle cx="6.2" cy="16.8" r="2.6" /><circle cx="17.8" cy="16.8" r="2.6" /><path d="M10.7 8.7 7.5 14.5M13.3 8.7l3.2 5.8M8.8 16.8h6.4" /></>,
   ring: <><circle cx="12" cy="13.8" r="6.4" /><path d="m9.7 5.4 2.3-1.8 2.3 1.8-2.3 1.8Z" /></>,
   chat: <path d="M5.6 4.8h12.8a2.2 2.2 0 0 1 2.2 2.2v8a2.2 2.2 0 0 1-2.2 2.2H11l-4.4 3.4v-3.4h-1a2.2 2.2 0 0 1-2.2-2.2V7a2.2 2.2 0 0 1 2.2-2.2Z" />,
+  mic: <><rect x="9" y="3.5" width="6" height="11" rx="3" /><path d="M5.5 10.5a6.5 6.5 0 0 0 13 0M12 17v4M8.5 21h7" /></>,
+  speakerSlash: <><path d="M4.6 9.4h3.2l4.6-3.8v12.8l-4.6-3.8H4.6Z" /><path d="M15.6 9.2a4 4 0 0 1 0 5.6M4 3.6l16 16.8" /></>,
 }
 
 export const ICON_NAMES = Object.keys(P)

@@ -161,10 +161,10 @@ describe('CoachSetup — "use my self-hosted openGym"', () => {
 })
 
 describe('CoachSetup — bringing your own key', () => {
-  it('offers exactly the providers the shared table lists, Anthropic first', async () => {
+  it('offers exactly the providers the shared table lists, NVIDIA NIM first as recommended', async () => {
     await mount(); await openByok()
     expect(all('.chip').map(c => c.textContent)).toEqual(Object.values(HTTP_PROVIDERS).map(p => p.label))
-    expect(chip('Anthropic API').classList.contains('on')).toBe(true)
+    expect(chip(HTTP_PROVIDERS.nvidia.label).classList.contains('on')).toBe(true)
   })
 
   it('names every category the payload is built from, in that order, and where it would go', async () => {
@@ -172,7 +172,7 @@ describe('CoachSetup — bringing your own key', () => {
     const section = all('.sect').find(s => s.querySelector('.sect-t')?.textContent === 'What leaves this phone')
     expect([...section.querySelectorAll('.lrow-t')].map(t => t.textContent))
       .toEqual(DATA_CATEGORIES.map(k => CATEGORY_TEXT[k]()[0]))
-    expect(host.textContent).toContain('Each request goes straight to api.anthropic.com with your key')
+    expect(host.textContent).toContain('Each request goes straight to integrate.api.nvidia.com with your key')
   })
 
   it('shows an endpoint field only for the OpenAI-compatible provider', async () => {
@@ -200,7 +200,7 @@ describe('CoachSetup — bringing your own key', () => {
     await mount(); await settle(); await openByok()
     expect(field('password').getAttribute('placeholder')).toContain('(saved)')
     await click(btn('List models')); await settle()
-    expect(localModels).toHaveBeenCalledWith({ provider: 'anthropic', baseUrl: null }, 'sk-saved')
+    expect(localModels).toHaveBeenCalledWith({ provider: 'nvidia', baseUrl: null }, 'sk-saved')
   })
 
   it('a typed key wins over the saved one and is never read back out of storage', async () => {
@@ -208,7 +208,7 @@ describe('CoachSetup — bringing your own key', () => {
     await mount(); await settle(); await openByok()
     typeIn(field('password'), '  sk-typed  ')
     await click(btn('List models')); await settle()
-    expect(localModels).toHaveBeenCalledWith({ provider: 'anthropic', baseUrl: null }, 'sk-typed')
+    expect(localModels).toHaveBeenCalledWith({ provider: 'nvidia', baseUrl: null }, 'sk-typed')
   })
 
   it('the OpenAI-compatible endpoint needs no key at all', async () => {
@@ -261,15 +261,15 @@ describe('CoachSetup — listing the models', () => {
   }
 
   it('walks the three steps, lists what the endpoint serves and pre-picks the default', async () => {
-    vi.mocked(localModels).mockResolvedValue({ ok: true, models: ['claude-opus-5', 'claude-haiku-4'] })
+    vi.mocked(localModels).mockResolvedValue({ ok: true, models: ['meta/llama-3.1-70b-instruct', 'meta/llama-3.1-8b-instruct'] })
     await withKey()
     await click(btn('List models')); await settle()
 
     expect(all('.card .small').map(s => s.textContent))
       .toEqual(['Loading the exercise catalogue…', 'Checking the endpoint…', 'Ready'])
     const select = host.querySelector('select')
-    expect([...select.options].map(o => o.value)).toEqual(['', 'claude-opus-5', 'claude-haiku-4'])
-    expect(select.value).toBe('claude-opus-5')
+    expect([...select.options].map(o => o.value)).toEqual(['', 'meta/llama-3.1-70b-instruct', 'meta/llama-3.1-8b-instruct'])
+    expect(select.value).toBe('meta/llama-3.1-70b-instruct')
     expect(btn('Save and use the Coach')).toBeTruthy()
     expect(btn('List models')).toBeTruthy()                 // still there, to re-list
   })
@@ -279,7 +279,7 @@ describe('CoachSetup — listing the models', () => {
     await withKey()
     await click(btn('List models')); await settle()
     expect(host.querySelector('select').value).toBe('')
-    expect(host.querySelector('select option').textContent).toBe('(claude-opus-5)')
+    expect(host.querySelector('select option').textContent).toBe('(meta/llama-3.1-70b-instruct)')
   })
 
   it('an endpoint that will not answer clears the progress and says why', async () => {
@@ -335,9 +335,9 @@ describe('CoachSetup — saving', () => {
   }
 
   it('writes the mode, the provider and the chosen model, then stores the key and leaves', async () => {
-    await listed(null, ['claude-opus-5'])
+    await listed(null, ['meta/llama-3.1-70b-instruct'])
     await click(btn('Save and use the Coach')); await settle()
-    expect(mocks.setCoachLocal).toHaveBeenCalledWith({ mode: 'byok', provider: 'anthropic', model: 'claude-opus-5', baseUrl: null })
+    expect(mocks.setCoachLocal).toHaveBeenCalledWith({ mode: 'byok', provider: 'nvidia', model: 'meta/llama-3.1-70b-instruct', baseUrl: null })
     expect(setApiKey).toHaveBeenCalledWith('sk-1')
     expect(mocks.toast).toHaveBeenCalledWith('The Coach is on')
     expect(mocks.nav).toHaveBeenCalledWith('/coach')

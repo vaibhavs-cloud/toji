@@ -1,6 +1,6 @@
 import { EXIDX, isAssisted } from './exercises.js'
 import { modeOf, workoutAt } from './history.js'
-import { MUSCLES, musclesOf } from './muscles.js'
+import { MUSCLES, MUSCLE_NAME, musclesOf } from './muscles.js'
 import { isWarmupRow, dropsOf, isSideSet } from './workout-model.js'
 import { estimate1RM, REP_CAP } from './onerm.js'
 import { rirOf, HARD_RIR } from './effort.js'
@@ -566,4 +566,121 @@ export function detrainedMuscles(workouts, now, opts = {}) {
   return Object.entries(strengthOf(workouts, now, opts))
     .filter(([, value]) => value < 1)
     .map(([slug]) => slug)
+}
+
+export const MIN_EFFECTIVE_SETS_7D = 4
+export const OPTIMAL_SETS_7D = 10
+export const VOLUME_DECAY_WINDOW_MS = 7 * 24 * 60 * 60 * 1000
+
+/**
+ * 7-day sets volume decay heuristics per muscle group.
+ *
+ * Grounded strictly in logged work sets (no invented recovery percentages).
+ * Calculates:
+ *  - raw completed work sets in the 7-day window (each set weighted by muscle contribution 1.0 or 0.4)
+ *  - decayed sets (applying linear decay over the 7 days: Math.max(0, 1 - age / 7d))
+ *  - days since last trained
+ *  - undertrained status and warning message when volume < MIN_EFFECTIVE_SETS_7D (4 sets)
+ *
+ * @param {Array<object>} workouts Workout history.
+ * @param {number} [now] Current timestamp in ms.
+ * @returns {Record<string, { slug: string, name: string, sets: number, decayedSets: number, lastTrained: number|null, daysSinceLast: number|null, undertrained: boolean, status: string, warning: string|null }>}
+ */
+export function volumeDecay7d(workouts, now = Date.now(), opts = {}) {
+  const current = Number.isFinite(Number(now)) ? Number(now) : Date.now()
+  const stats = Object.fromEntries(MUSCLES.map(slug => [slug, {
+    slug,
+    name: MUSCLE_NAME[slug] || slug,
+    sets: 0,
+    decayedSets: 0,
+    lastTrained: null,
+    daysSinceLast: null,
+    undertrained: true,
+    status: 'untrained',
+    warning: null,
+  }]))
+
+  for (const workout of workouts || []) {
+    const timestamp = workoutTimestamp(workout)
+    if (!Number.isFinite(timestamp) || timestamp > current) continue
+    const ageMs = current - timestamp
+    const inWindow = ageMs <= VOLUME_DECAY_WINDOW_MS
+    const decayFactor = inWindow ? Math.max(0, 1 - ageMs / VOLUME_DECAY_WINDOW_MS) : 0
+
+    for (const entry of workout.entries || []) {
+      const ex = exerciseFor(entry)
+      const weights = musclesOf(ex)
+      const workSets = (entry.sets || []).filter(s => s?.done === true && !isWarmupRow(s))
+      if (!workSets.length) continue
+
+      for (const [slug, weight] of Object.entries(weights)) {
+        if (!stats[slug]) continue
+        if (stats[slug].lastTrained == null || timestamp > stats[slug].lastTrained) {
+          stats[slug].lastTrained = timestamp
+        }
+        if (inWindow) {
+          const addedSets = workSets.length * weight
+          stats[slug].sets += addedSets
+          stats[slug].decayedSets += addedSets * decayFactor
+        }
+      }
+    }
+  }
+
+  for (const slug of MUSCLES) {
+    const item = stats[slug]
+    item.sets = Math.round(item.sets * 10) / 10
+    item.decayedSets = Math.round(item.decayedSets * 10) / 10
+    if (item.lastTrained != null) {
+      item.daysSinceLast = Math.max(0, Math.floor((current - item.lastTrained) / 86400000))
+    }
+
+    item.undertrained = item.sets < MIN_EFFECTIVE_SETS_7D
+    if (item.sets === 0) {
+      item.status = 'untrained'
+      item.warning = item.daysSinceLast != null
+        ? `Trained ${item.daysSinceLast}d ago (0 sets in last 7 days)`
+        : 'No logged sets'
+    } else if (item.sets < MIN_EFFECTIVE_SETS_7D) {
+      item.status = 'undertrained'
+      item.warning = `${item.sets} sets in 7 days (below ${MIN_EFFECTIVE_SETS_7D}-set target)`
+    } else if (item.daysSinceLast === 0 || (current - item.lastTrained < 36 * 3600 * 1000)) {
+      item.status = 'recovering'
+    } else if (item.sets > 16) {
+      item.status = 'fatigued'
+    } else {
+      item.status = 'ready'
+    }
+  }
+
+  return stats
+}
+
+/**
+ * List of undertrained muscle groups with warning details.
+ */
+export function undertrainedMuscles(workouts, now = Date.now(), opts = {}) {
+  const vol = volumeDecay7d(workouts, now, opts)
+  return Object.values(vol)
+    .filter(m => m.undertrained)
+    .sort((a, b) => a.sets - b.sets || (b.daysSinceLast ?? Infinity) - (a.daysSinceLast ?? Infinity))
+}
+
+/**
+ * High-level recovery intelligence overview grounded in logged sets.
+ */
+export function recoverySummary(workouts, now = Date.now(), opts = {}) {
+  const vol = volumeDecay7d(workouts, now, opts)
+  const undertrained = Object.values(vol).filter(m => m.undertrained)
+  const ready = Object.values(vol).filter(m => m.status === 'ready')
+  const recovering = Object.values(vol).filter(m => m.status === 'recovering')
+
+  return {
+    volumeByMuscle: vol,
+    undertrained,
+    undertrainedCount: undertrained.length,
+    readyCount: ready.length,
+    recoveringCount: recovering.length,
+    disclaimer: 'Recovery heuristics are grounded in your logged sets over the last 7 days. Not medical advice.',
+  }
 }

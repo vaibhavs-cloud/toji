@@ -32,6 +32,14 @@ import {
 } from '../lib/coach.js'
 import { AdaptProposal, adaptTitle } from '../components/WorkoutCoachSheet.jsx'
 import { insightsFor, sessionInsights } from '../lib/coach-insights.js'
+import {
+  parseOperatorIntent,
+  executeGetExerciseHistory,
+  executeGetRecoveryOverview,
+  executeSummarizeWeek,
+  buildActionProposal,
+  executeWriteAction
+} from '../lib/coach-tools.js'
 import { useCoachStatus, requestReview, requestDebrief, requestPlan, refinePlan, askCoach, resolvePending, cohortStats, setCohortShare, jobErrorText, awaitedJob, settleAwaited, JOB_ERRORS, ensureAiConsent, isDeclined } from '../lib/coach-api.js'
 import { AiConsentSection } from '../components/CoachConsentSheet.jsx'
 import { useCoachGate } from '../lib/use-coach-gate.js'
@@ -60,6 +68,155 @@ export default function CoachChat() {
   const endRef = useRef(null)
   const prevJob = useRef(null)
   const coachMode = coachLocal?.mode
+
+  // Partner Mode: 'coach' (conversational) | 'operator' (action execution)
+  const [partnerMode, setPartnerMode] = useState('coach')
+  const [activeProposal, setActiveProposal] = useState(null)
+
+  // Voice I/O: Speech-to-Text & Text-to-Speech
+  const [isListening, setIsListening] = useState(false)
+  const [ttsEnabled, setTtsEnabled] = useState(() => {
+    try { return localStorage.getItem('opengym_coach_tts') === '1' } catch { return false }
+  })
+  const recognitionRef = useRef(null)
+
+  const speakCoach = msgText => {
+    if (!ttsEnabled || typeof window === 'undefined' || !window.speechSynthesis) return
+    try {
+      window.speechSynthesis.cancel()
+      const clean = String(msgText || '')
+        .replace(/```[\s\S]*?```/g, '')
+        .replace(/`([^`]+)`/g, '$1')
+        .replace(/[*#_~]/g, '')
+        .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+        .replace(/^\s*[-•]\s*/gm, '')
+        .trim()
+      if (!clean) return
+      const utterance = new SpeechSynthesisUtterance(clean)
+      utterance.rate = 1.05
+      utterance.pitch = 1.0
+      window.speechSynthesis.speak(utterance)
+    } catch {}
+  }
+
+  const toggleTts = () => {
+    const next = !ttsEnabled
+    setTtsEnabled(next)
+    try { localStorage.setItem('opengym_coach_tts', next ? '1' : '0') } catch {}
+    if (!next && typeof window !== 'undefined' && window.speechSynthesis) {
+      window.speechSynthesis.cancel()
+    } else if (next) {
+      toast(t('Voice speech output enabled'))
+    }
+  }
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition
+    if (!SpeechRec) return
+    try {
+      const rec = new SpeechRec()
+      rec.continuous = false
+      rec.interimResults = false
+      rec.lang = S?.lang ? (S.lang.length === 2 ? `${S.lang}-${S.lang.toUpperCase()}` : S.lang) : 'en-US'
+      rec.onresult = e => {
+        const transcript = e.results?.[e.results.length - 1]?.[0]?.transcript
+        if (transcript) {
+          setText(prev => (prev ? prev.trim() + ' ' + transcript.trim() : transcript.trim()))
+        }
+      }
+      rec.onerror = err => {
+        setIsListening(false)
+        if (err.error !== 'no-speech') {
+          toast(t('Microphone error: {0}', err.error || 'unknown'))
+        }
+      }
+      rec.onend = () => {
+        setIsListening(false)
+      }
+      recognitionRef.current = rec
+      return () => {
+        try { rec.abort() } catch {}
+      }
+    } catch {}
+  }, [S?.lang])
+
+  const toggleListening = () => {
+    if (!recognitionRef.current) {
+      toast(t('Speech recognition not supported on this device.'))
+      return
+    }
+    if (isListening) {
+      try { recognitionRef.current.stop() } catch {}
+      setIsListening(false)
+    } else {
+      try {
+        recognitionRef.current.start()
+        setIsListening(true)
+      } catch {
+        setIsListening(false)
+      }
+    }
+  }
+
+  const handleConfirmProposal = () => {
+    if (!activeProposal) return
+    const res = executeWriteAction(activeProposal, update)
+    if (res.ok) {
+      toast(res.message || t('Action confirmed and executed'))
+      update(s => appendChat(s, {
+        role: 'coach',
+        kind: 'text',
+        text: `✓ Executed: ${activeProposal.title}. ${res.message || ''}`
+      }))
+      speakCoach(`Executed ${activeProposal.title}.`)
+    } else {
+      toast(res.error || t('Action failed'))
+    }
+    setActiveProposal(null)
+    refresh()
+  }
+
+  const handleDismissProposal = () => {
+    if (!activeProposal) return
+    update(s => appendChat(s, {
+      role: 'coach',
+      kind: 'text',
+      text: `Cancelled: ${activeProposal.title}. No changes were made.`
+    }))
+    setActiveProposal(null)
+  }
+
+  const executeQuickTool = toolType => {
+    if (toolType === 'recovery') {
+      const res = executeGetRecoveryOverview(S)
+      update(s => {
+        appendChat(s, { role: 'user', kind: 'text', text: t('How is my recovery status?') })
+        appendChat(s, { role: 'coach', kind: 'text', text: res.summary })
+      })
+      speakCoach(res.summary)
+    } else if (toolType === 'week') {
+      const res = executeSummarizeWeek(S)
+      update(s => {
+        appendChat(s, { role: 'user', kind: 'text', text: t('Summarize my week') })
+        appendChat(s, { role: 'coach', kind: 'text', text: res.summary })
+      })
+      speakCoach(res.summary)
+    } else if (toolType === 'rest') {
+      const prop = buildActionProposal('start_rest_timer', { seconds: 90 }, S)
+      if (prop) {
+        update(s => appendChat(s, { role: 'user', kind: 'text', text: t('Start 90s rest timer') }))
+        setActiveProposal(prop)
+      }
+    } else if (toolType === 'log') {
+      const activeEx = S.active?.entries?.[S.active.cur]
+      const prop = buildActionProposal('log_set', { exId: activeEx?.id, reps: 10 }, S)
+      if (prop) {
+        update(s => appendChat(s, { role: 'user', kind: 'text', text: t('Log completed set') }))
+        setActiveProposal(prop)
+      }
+    }
+  }
 
   const gate = useCoachGate()
   const ok = gate.ok
@@ -115,6 +272,7 @@ export default function CoachChat() {
       if ((s.coach?.chat || []).some(m => m.pid === pending.id)) return
       appendChat(s, { role: 'coach', kind: 'text', text: String(pending.answer || ''), pid: pending.id })
     })
+    speakCoach(pending.answer)
     resolvePending({ accepted: ['ask'] }).catch(() => {}).finally(() => refresh())
   }, [pending?.id, !!job])
 
@@ -127,6 +285,42 @@ export default function CoachChat() {
   const send = async () => {
     const msg = text.trim()
     if (!msg || busy) return
+
+    // Structured Operator Mode & Tool execution
+    const intent = parseOperatorIntent(msg, S)
+    if (intent) {
+      if (intent.type === 'read') {
+        let result
+        if (intent.tool === 'get_exercise_history') {
+          result = executeGetExerciseHistory(S, intent.args)
+        } else if (intent.tool === 'get_recovery_overview') {
+          result = executeGetRecoveryOverview(S)
+        } else if (intent.tool === 'summarize_week') {
+          result = executeSummarizeWeek(S)
+        }
+        if (result?.ok) {
+          update(s => {
+            appendChat(s, { role: 'user', kind: 'text', text: msg })
+            appendChat(s, { role: 'coach', kind: 'text', text: result.summary })
+          })
+          speakCoach(result.summary)
+          setText('')
+          setExpanded(false)
+          return
+        }
+      } else if (intent.type === 'write') {
+        const prop = buildActionProposal(intent.tool, intent.args, S)
+        if (prop) {
+          update(s => appendChat(s, { role: 'user', kind: 'text', text: msg }))
+          setActiveProposal(prop)
+          setText('')
+          setExpanded(false)
+          speakCoach(`Operator action proposed: ${prop.title}. Please confirm to execute.`)
+          return
+        }
+      }
+    }
+
     setBusy(true)
     try {
       // A message about a proposed plan refines it. With no plan at all — the first attempt
@@ -219,7 +413,12 @@ export default function CoachChat() {
       <button className="iconbtn" data-back="/plan" onClick={() => nav('/plan')} aria-label={t('Back')}><Icon name="chevronLeft" /></button>
       <div className="chat-av"><Icon name="sparkles" /></div>
       <div className="grow">
-        <h1>{t('Coach')}</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <h1 style={{ margin: 0 }}>{t('Coach')}</h1>
+          <span className="provider-badge" title={t('Powered by NVIDIA NIM API')}>
+            <Icon name="bolt" /> {coachLocal?.provider === 'nvidia' || (!coachLocal?.provider && !config?.coach?.provider) ? 'NVIDIA NIM' : (coachLocal?.provider || config?.coach?.provider || 'AI Partner')}
+          </span>
+        </div>
         <div className={'chat-st' + (job ? ' live' : '')}>{status}</div>
       </div>
       <button className="iconbtn" onClick={menu} aria-label={t('More')}><Icon name="more" /></button>
@@ -241,19 +440,78 @@ export default function CoachChat() {
           ? <DebriefCard p={pending} S={S} update={update} toast={toast} refresh={refresh} />
           : <ReviewCard p={pending} S={S} update={update} toast={toast} refresh={refresh} />)}
 
+      {activeProposal && (
+        <div className="operator-card" role="region" aria-label={t('Operator confirmation')}>
+          <div className="operator-hdr">
+            <span className="operator-tag">{t('Operator Mode · Confirmation Required')}</span>
+          </div>
+          <div className="operator-title">{activeProposal.title}</div>
+          <div className="operator-desc">{activeProposal.details}</div>
+          <div className="operator-actions">
+            <button className="btn-confirm" onClick={handleConfirmProposal}>
+              <Icon name="check" /> {t('Confirm & Apply')}
+            </button>
+            <button className="btn-dismiss" onClick={handleDismissProposal}>
+              <Icon name="xmark" /> {t('Dismiss')}
+            </button>
+          </div>
+        </div>
+      )}
+
       <div ref={endRef} />
     </div>
 
     <div className="composer">
+      <div className="partner-mode-bar">
+        <button
+          type="button"
+          className={'partner-mode-pill ' + partnerMode}
+          onClick={() => setPartnerMode(m => m === 'coach' ? 'operator' : 'coach')}
+          title={t('Toggle Partner Mode')}
+        >
+          <Icon name={partnerMode === 'operator' ? 'bolt' : 'sparkles'} />
+          {partnerMode === 'operator' ? t('Operator Mode') : t('Coach Mode')}
+        </button>
+
+        <div className="voice-tools">
+          <button
+            type="button"
+            className={'voice-btn' + (ttsEnabled ? ' active' : '')}
+            onClick={toggleTts}
+            aria-label={t('Voice speech output')}
+            title={ttsEnabled ? t('Speech output: On') : t('Speech output: Off')}
+          >
+            <Icon name={ttsEnabled ? 'speaker' : 'speakerSlash'} />
+          </button>
+        </div>
+      </div>
+
       {idle && !busy && <div className="chips-row">
-        <button className="qchip" onClick={askReview}><Icon name="sparkles" />{t('Review my training')}</button>
-        {!!lastWorkout && <button className="qchip" onClick={askDebrief}><Icon name="checkCircle" />{t('Last workout')}</button>}
-        {!!(S.routines || []).length && <button className="qchip" onClick={pickRoutine}><Icon name="wrench" />{t('Improve a routine')}</button>}
-        {community && <button className="qchip" onClick={showCohort}><Icon name="person" />{t('Compare')}</button>}
+        {partnerMode === 'operator' ? <>
+          <button className="qchip" onClick={() => executeQuickTool('recovery')}><Icon name="chartLine" />{t('Recovery')}</button>
+          <button className="qchip" onClick={() => executeQuickTool('week')}><Icon name="calendar" />{t('Week summary')}</button>
+          <button className="qchip" onClick={() => executeQuickTool('rest')}><Icon name="timer" />{t('Rest (90s)')}</button>
+          <button className="qchip" onClick={() => executeQuickTool('log')}><Icon name="plusCircle" />{t('Log set')}</button>
+        </> : <>
+          <button className="qchip" onClick={askReview}><Icon name="sparkles" />{t('Review my training')}</button>
+          {!!lastWorkout && <button className="qchip" onClick={askDebrief}><Icon name="checkCircle" />{t('Last workout')}</button>}
+          {!!(S.routines || []).length && <button className="qchip" onClick={pickRoutine}><Icon name="wrench" />{t('Improve a routine')}</button>}
+          {community && <button className="qchip" onClick={showCohort}><Icon name="person" />{t('Compare')}</button>}
+        </>}
       </div>}
       <div className={'composer-in' + (expanded ? ' tall' : '')}>
         <ChatInput value={text} onChange={setText} onSend={send} placeholder={placeholder} disabled={!!job}
           maxLength={maxMessageLen || 1000} expanded={expanded} setExpanded={setExpanded} />
+        <button
+          type="button"
+          className={'voice-btn' + (isListening ? ' recording' : '')}
+          onClick={toggleListening}
+          disabled={busy || !!job}
+          aria-label={isListening ? t('Stop listening') : t('Push to talk')}
+          title={isListening ? t('Listening… click to stop') : t('Push to talk')}
+        >
+          <Icon name="mic" />
+        </button>
         <button className="send" onClick={send} disabled={!text.trim() || busy || !!job} aria-label={t('Send')}><Icon name="arrowUp" /></button>
       </div>
       {cap?.limit > 0 && <div className="composer-cap">{t('{0} of {1} Coach runs used today', cap.used, cap.limit)}</div>}

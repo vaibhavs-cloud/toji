@@ -71,6 +71,9 @@ import { setTrendOn, setTrendsFor, trendGlyph, trendLabel } from '../lib/set-tre
 import { formulaOf } from '../lib/onerm.js'
 import { setNoteOf } from '../lib/set-notes.js'
 import { isOn } from '../lib/modules.js'
+import { MANGA_EYE_ART } from '../lib/toji-assets.js'
+import TojiMangaStage from '../components/TojiMangaStage.jsx'
+import GojoCoachCard from '../components/GojoCoachCard.jsx'
 
 // How long after a key starts a hold the same key is not yet its "Done" (#133). A USB button
 // that bounces, or a double press, sends two presses a moment apart: the first starts the hold,
@@ -2407,6 +2410,7 @@ function ActiveWorkout() {
         ? <button type="button" className="whdr-gym" onClick={openGymMenu} aria-label={t('Gym: {0}', gymShown)}><Icon name="house" />{gymShown}</button>
         : <span className="whdr-gym"><Icon name="house" />{gymShown}</span>)}</div>
       {!chipRow && sessionMap}
+      <img src={MANGA_EYE_ART} alt="Manga Eye" style={{ width: 44, height: 26, objectFit: 'cover', borderRadius: 4, opacity: 0.9, border: '1px solid rgba(255,255,255,0.1)' }} />
       <button className="iconbtn" data-tour="workout-more" aria-label={t('Workout options')} title={t('Workout options')} onClick={openViewMenu}><Icon name="more" /></button>
       <button className="btn primary pill whdr-finish" data-tour="finish" aria-label={editing ? t('Save changes') : undefined}
         onClick={() => (editing ? finishWorkout() : finishWorkoutSheet({ onDiscard: discardWorkout }))}>{editing ? t('Save') : t('Finish')}</button>
@@ -2424,6 +2428,14 @@ function ActiveWorkout() {
     </div>
     {editing && <p className="muted small">{t('Editing a saved workout. Date and duration stay unchanged.')}</p>}
     {A.backfill && <div className="muted small" style={{ marginBottom: 8 }}>{t('Logging a past workout, so no rest timers.')}</div>}
+
+    {/* Toji Dark Manga Stage & Kanji Pillar */}
+    {A.entries.length > 0 && (() => {
+      const activeEntry = A.entries[cur]
+      const activeEx = activeEntry ? exOr(activeEntry.id) : null
+      const setsCount = activeEntry?.sets?.length || 0
+      return <TojiMangaStage exercise={activeEx} setsInfo={setsCount ? `${setsCount} sets` : ''} />
+    })()}
 
     {A.entries.length ? (listMode ? (
       <div className="workout-list" data-testid="workout-list" ref={listRef}>
@@ -2533,6 +2545,13 @@ function ActiveWorkout() {
         <ExerciseBlock entryIdx={cur} onPairPrev={onPairPrev} onPairNext={onPairNext} {...blockProps(cur)} />
       )}
       </SwipeCards>
+
+      {/* Gojo Coaching Card with Speech Bubble */}
+      {A.entries.length > 0 && (() => {
+        const activeEntry = A.entries[cur]
+        const activeEx = activeEntry ? exOr(activeEntry.id) : null
+        return <GojoCoachCard muscleGroup={activeEx?.bp || 'default'} />
+      })()}
     </>) : <div className="empty"><div className="ico"><Icon name="shuffle" /></div>{t('Freestyle workout. Add your first exercise and off you go.')}</div>}
 
     <div style={{ height: 12 }} />
@@ -2584,8 +2603,8 @@ function ActiveWorkout() {
     {(() => {
       const exDone = A.entries.filter(e => e.sets.length && e.sets.every(s => s.done)).length
       const allDone = A.entries.length > 0 && exDone === A.entries.length
-      return <button className={allDone ? 'btn primary' : 'btn ghost dim'} onClick={finishWorkout}>
-        {editing ? t('Save changes') : allDone ? t('Finish workout') : t('Finish workout early · {0} exercises', exDone + '/' + A.entries.length)}
+      return <button className={(allDone ? 'btn primary' : 'btn ghost dim') + ' btn-finish-toji'} onClick={finishWorkout}>
+        {editing ? t('Save changes') : allDone ? t('Finish Session') : t('Finish Session Early · {0} exercises', exDone + '/' + A.entries.length)}
       </button>
     })()}
     <div className="workout-end-spacer" />

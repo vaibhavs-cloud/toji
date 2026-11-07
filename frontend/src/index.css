@@ -18,47 +18,53 @@
 
 /* ---------------------------------------------------------------- tokens -- */
 :root {
+  /* Toji Dark Manga ("Ink and Blood") tokens */
+  --bg-primary:     #0B0B0D;   /* Ink black */
+  --surface-1:      #17181C;   /* Graphite base */
+  --label-primary:  #F4F1EA;   /* Warm parchment off-white */
+  --secondary-jade: #2E9E77;   /* Muted jade green */
+
   /* surfaces — dark is the default */
-  --bg:        #000000;
-  --bg-el:     #0e0e10;   /* elevated backdrop (sheets, bars) */
-  --surface:   #1c1c1e;   /* card / grouped-list fill */
-  --surface-2: #2c2c2e;   /* pressed + nested fill */
-  --surface-3: #3a3a3c;   /* controls (segmented track, switch off) */
+  --bg:        #0B0B0D;
+  --bg-el:     #121316;   /* elevated backdrop (sheets, bars) */
+  --surface:   #17181C;   /* card / grouped-list fill */
+  --surface-2: #1E1F24;   /* pressed + nested fill */
+  --surface-3: #28292F;   /* controls (segmented track, switch off) */
   /* Things that float over the page (the tour bubble, a dialog, the rest timer, a chart's tooltip,
      the back-to-top button): one step lighter than a card and edged with a hairline of light, so
      in the dark theme they read as lifted rather than as one more card under a shadow you cannot
      see on black (redesign 1.4.5, P11). In the light theme white with the shadow does that. */
-  --surface-raised: #2c2c2e;
-  --raised-line: rgba(255,255,255,.09);
+  --surface-raised: #1E1F24;
+  --raised-line: rgba(255,255,255,.08);
 
   /* text */
-  --label:     #ffffff;
-  --label-2:   rgba(235,235,245,.60);
-  --label-3:   rgba(235,235,245,.32);
-  --label-4:   rgba(235,235,245,.18);
-  --label-dim: rgba(235,235,245,.50);
+  --label:     #F4F1EA;
+  --label-2:   rgba(244,241,234,.74);
+  --label-3:   rgba(244,241,234,.42);
+  --label-4:   rgba(244,241,234,.20);
+  --label-dim: rgba(244,241,234,.60);
 
   /* lines */
-  --sep:       rgba(84,84,88,.60);
-  --sep-op:    rgba(84,84,88,.34);   /* for edges sitting over blur */
+  --sep:       rgba(255,255,255,.08);
+  --sep-op:    rgba(255,255,255,.05);
   --hair:      .5px;
 
-  /* system palette (iOS dark values) */
-  --blue:#0a84ff; --green:#30d158; --red:#ff453a; --orange:#ff9f0a;
+  /* system palette (iOS dark values / Toji blood & jade) */
+  --blue:#0a84ff; --green:#2E9E77; --red:#C1121F; --orange:#ff9f0a;
   --yellow:#ffd60a; --teal:#40c8e0; --indigo:#5e5ce6; --pink:#ff375f;
   --purple:#bf5af2; --mint:#63e6e2; --brown:#ac8e68; --grey:#8e8e93;
 
-  /* accent (per-account, synced) */
-  --acc:  var(--green);
-  --acc-2:#248a3d;
-  --on-acc:#000000;
+  /* accent (default Blood Red #C1121F in Toji theme) */
+  --acc:  #C1121F;
+  --acc-2:#8E0E17;
+  --on-acc:#ffffff;
   --acc-soft: color-mix(in srgb, var(--acc) 16%, transparent);
   --acc-line: color-mix(in srgb, var(--acc) 38%, transparent);
   /* The accent as text, an icon or a focus ring: the accent itself in the dark theme. In the light
      theme the presets' fills (#34c759 green, #ff9500 orange, #ffcc00 yellow) are 2:1 on the page,
      so every accent-coloured word (Add set, Next, the progression line, links) takes a darker
      shade of the same hue that reaches 4.5:1 (design review 1.4.5). Fills keep --acc. */
-  --acc-ink: var(--acc);
+  --acc-ink: #E5312D;
 
   /* geometry */
   --r-sm:8px; --r:12px; --r-lg:16px; --r-xl:22px; --r-card:14px;
@@ -82,9 +88,9 @@
   --lh-tight:1.06; --lh-title:1.2; --lh-body:1.29; --lh-small:1.38;
   --ls-large:-.028em; --ls-title:-.021em; --ls-body:-.01em; --ls-small:-.004em;
 
-  /* motion */
+  /* motion — locked to 167ms (10 frames @ 60Hz, 15 frames @ 90Hz) */
   --ease:cubic-bezier(.32,.72,0,1);
-  --fast:140ms; --med:220ms;
+  --fast:167ms; --med:167ms;
   /* Pressed states (P13), one rule per tier, so a press feels the same wherever it lands:
      - rows (.item, .lrow.tap, .menu-item) fill with --press-fill and do not move: the iPhone's
        highlight for a table cell;
@@ -3272,3 +3278,198 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   .kpis .tile{padding:10px 11px}
   .kpis .tile .v{font-size:var(--fs-title3)}
 }
+
+/* ---------------------------------------------------- Toji Animations ----- */
+@keyframes domainRingSpin {
+  from { transform: translate3d(0, 0, 0) rotate(0deg); }
+  to { transform: translate3d(0, 0, 0) rotate(360deg); }
+}
+
+@keyframes blackFlashShockwave {
+  0% { transform: translate3d(0, 0, 0) scale(0.85); opacity: 0.2; }
+  50% { transform: translate3d(0, 0, 0) scale(1.08); opacity: 1; }
+  100% { transform: translate3d(0, 0, 0) scale(1.02); opacity: 0.9; }
+}
+
+@keyframes wormWiggle {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  25% { transform: translate3d(1px, -2px, 0) rotate(-3deg); }
+  75% { transform: translate3d(-1px, -1px, 0) rotate(3deg); }
+}
+
+.worm-idle img {
+  animation: wormWiggle 3.5s ease-in-out infinite;
+}
+
+/* 60Hz and 90Hz Hardware Tuning */
+.anim-gpu, .black-flash-overlay, .domain-timer-modal, .inventory-worm-flair, .card, .lrow, .item {
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+
+/* Toji Manga Workout & Kanban Styles */
+.toji-kanji-rail {
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  font-family: serif;
+  font-weight: 900;
+  color: var(--acc, #C1121F);
+  letter-spacing: 0.3em;
+  user-select: none;
+}
+
+.workout-eye-badge {
+  width: 46px;
+  height: 26px;
+  object-fit: cover;
+  border-radius: 4px;
+  opacity: 0.92;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  transform: translate3d(0, 0, 0);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.workout-kanji-pillar {
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  font-family: "Shippori Mincho B1", "Noto Sans JP", serif;
+  font-size: 15px;
+  font-weight: 900;
+  color: #C1121F;
+  letter-spacing: 0.35em;
+  user-select: none;
+  background: rgba(23, 24, 28, 0.7);
+  border: 1px solid rgba(193, 18, 31, 0.25);
+  border-radius: 8px;
+  padding: 12px 6px;
+  text-shadow: 0 0 12px rgba(193, 18, 31, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.workout-art-stage {
+  position: relative;
+  width: 100%;
+  height: 210px;
+  border-radius: 20px;
+  overflow: hidden;
+  background-color: #17181C;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  transform: translate3d(0, 0, 0);
+}
+
+.workout-art-stage .stage-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 25%;
+  opacity: 0.88;
+  transform: translate3d(0, 0, 0);
+  transition: opacity 167ms ease-out;
+}
+
+.workout-art-stage .stage-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(11, 11, 13, 0.1) 0%, rgba(11, 11, 13, 0.65) 60%, #0B0B0D 100%);
+  pointer-events: none;
+}
+
+.workout-art-stage .stage-meta {
+  position: absolute;
+  bottom: 14px;
+  left: 18px;
+  right: 18px;
+  z-index: 2;
+}
+
+.workout-art-stage .stage-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #F4F1EA;
+  text-transform: capitalize;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
+}
+
+.workout-art-stage .stage-sub {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(244, 241, 234, 0.7);
+  margin-top: 4px;
+  letter-spacing: 0.04em;
+}
+
+.btn-finish-toji {
+  position: relative;
+  width: 100%;
+  height: 54px;
+  border-radius: 27px;
+  background: linear-gradient(135deg, #A7101B 0%, #C1121F 60%, #8E0E17 100%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #FFFFFF;
+  font-weight: 800;
+  font-size: 16px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(193, 18, 31, 0.45);
+  transform: translate3d(0, 0, 0);
+  transition: transform 167ms cubic-bezier(.32,.72,0,1), filter 167ms;
+}
+
+.btn-finish-toji:active {
+  transform: translate3d(0, 0, 0) scale(0.97);
+  filter: brightness(0.9);
+}
+
+.set-status-done {
+  color: #2E9E77 !important;
+}
+
+.set-status-active {
+  color: #C1121F !important;
+}
+
+.setrow.done .tick {
+  background: rgba(46, 158, 119, 0.18) !important;
+  color: #2E9E77 !important;
+  border-color: rgba(46, 158, 119, 0.4) !important;
+}
+
+.setrow.cur, .setrow.active-set {
+  background: rgba(193, 18, 31, 0.08) !important;
+  border-left: 3px solid #C1121F !important;
+}
+
+.toji-manga-stage {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  overflow: hidden;
+  border-radius: var(--r-card);
+  margin-bottom: 16px;
+  background: var(--surface-1, #17181C);
+}
+
+.toji-manga-stage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: translate3d(0, 0, 0);
+}
+
+.toji-manga-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(11, 11, 13, 0.1) 0%, rgba(11, 11, 13, 0.85) 80%, var(--bg, #0B0B0D) 100%);
+  pointer-events: none;
+}
+

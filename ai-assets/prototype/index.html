@@ -1,0 +1,238 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Toji prototype — 4 screens</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+@font-face { font-family:"Bebas Neue"; src:url("../../frontend/public/assets/fonts/bebas-neue-latin-400-normal.woff2") format("woff2"); font-weight:400; font-display:swap; }
+@font-face { font-family:"Inter"; src:url("../../frontend/public/assets/fonts/inter-latin-400-normal.woff2") format("woff2"); font-weight:400; font-display:swap; }
+@font-face { font-family:"Inter"; src:url("../../frontend/public/assets/fonts/inter-latin-500-normal.woff2") format("woff2"); font-weight:500; font-display:swap; }
+@font-face { font-family:"Inter"; src:url("../../frontend/public/assets/fonts/inter-latin-600-normal.woff2") format("woff2"); font-weight:600; font-display:swap; }
+@font-face { font-family:"Inter"; src:url("../../frontend/public/assets/fonts/inter-latin-800-normal.woff2") format("woff2"); font-weight:800; font-display:swap; }
+@font-face { font-family:"Shippori Mincho B1"; src:url("../../frontend/public/assets/fonts/shippori-mincho-b1-japanese-500-normal.woff2") format("woff2"); font-weight:500; font-display:swap; }
+@font-face { font-family:"Shippori Mincho B1"; src:url("../../frontend/public/assets/fonts/shippori-mincho-b1-japanese-700-normal.woff2") format("woff2"); font-weight:700; font-display:swap; }
+
+:root { --asset:"../../frontend/public/assets/user/"; }
+.topnav { display:flex; gap:14px; padding:22px 34px; flex-wrap:wrap; }
+.topnav a { color:#9aa0a6; text-decoration:none; font-family:"Inter"; font-weight:600; font-size:14px; padding:8px 14px; border-radius:10px; background:#1A1A1E; }
+.topnav a.on { color:#fff; background:#C1121F; }
+.stage { display:flex; gap:44px; padding:0 34px 60px; overflow-x:auto; }
+.lane { display:flex; flex-direction:column; gap:10px; }
+.lane h2 { font-family:"Inter"; font-size:13px; color:#8a8d93; font-weight:600; margin-left:8px; }
+
+.frame { width:390px; height:844px; border-radius:38px; overflow:hidden; position:relative; background:var(--ink); border:6px solid #000; box-shadow:0 22px 60px rgba(0,0,0,0.55); flex:0 0 auto; }
+.frame .bg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.frame .content { position:absolute; inset:0; padding:34px 26px; display:flex; flex-direction:column; }
+.kanji { font-family:"Shippori Mincho B1"; }
+.display { font-family:"Bebas Neue"; letter-spacing:0.04em; }
+
+.brandrow { display:flex; justify-content:space-between; align-items:center; }
+.brandrow .word { width:112px; opacity:0.95; }
+.hello { margin-top:18px; }
+.hello .hi { font-weight:800; font-size:26px; letter-spacing:-0.01em; }
+.hello .sub { color:#8A8D93; font-size:13px; margin-top:6px; }
+.tally { margin-top:10px; display:flex; align-items:center; gap:8px; color:#8A8D93; font-size:12px; }
+.tally img { height:16px; opacity:0.85; }
+.progress-card { margin-top:22px; background:rgba(23,24,28,0.72); border:1px solid rgba(237,233,224,0.08); border-radius:22px; padding:18px; }
+.progress-card .head { display:flex; justify-content:space-between; align-items:center; }
+.progress-card .head span { font-family:"Bebas Neue"; font-size:15px; letter-spacing:0.14em; color:#B7B9BC; }
+.progress-card .head .k { color:#5c5f63; font-family:"Shippori Mincho B1"; font-size:12px; }
+.ringwrap { display:flex; align-items:center; gap:18px; margin-top:12px; }
+.ring { width:118px; height:118px; position:relative; border-radius:50%; background:conic-gradient(-90deg, #2E9E77 0 62%, rgba(237,233,224,0.10) 62% 100%); }
+.ring::before { content:""; position:absolute; inset:12px; border-radius:50%; background:#101114; }
+.ring b { position:absolute; inset:0; display:grid; place-items:center; font-size:26px; font-weight:800; }
+.pinfo { display:flex; flex-direction:column; gap:8px; font-size:12px; color:#C7C9CC; }
+.pinfo .r { display:flex; align-items:center; gap:8px; }
+.dot { width:8px; height:8px; border-radius:50%; background:#2E9E77; }
+.quote { margin-top:16px; background:rgba(23,24,28,0.66); border-radius:18px; padding:14px 16px; display:flex; gap:12px; align-items:center; }
+.quote img { width:180px; height:auto; max-width:42%; }
+.quote .q { font-size:12.5px; color:#D6D3CA; line-height:1.45; }
+.quote .qs { color:#7c7f83; font-size:11px; margin-top:4px; }
+.cta { margin-top:auto; position:relative; display:block; height:64px; border-radius:32px; color:#fff; text-decoration:none; }
+.cta img { position:absolute; inset:0; width:100%; height:100%; object-fit:fill; filter:drop-shadow(0 8px 24px rgba(193,18,31,0.35)); }
+.cta span { position:relative; z-index:2; display:grid; place-items:center; height:100%; font-family:"Bebas Neue"; font-size:21px; letter-spacing:0.2em; }
+
+.wk-top { display:flex; justify-content:space-between; align-items:center; }
+.wk-back { width:40px; height:40px; border-radius:14px; background:rgba(23,24,28,0.75); border:1px solid rgba(237,233,224,0.09); display:grid; place-items:center; color:#EDE9E0; font-size:16px; }
+.wk-title { font-weight:800; font-size:22px; }
+.wk-kicker { color:#C1121F; font-family:"Bebas Neue"; letter-spacing:0.22em; font-size:13px; margin-top:4px; }
+.wk-hero { margin-top:24px; border-radius:24px; overflow:hidden; position:relative; height:300px; background:#0B0B0D; border:1px solid rgba(237,233,224,0.07); }
+.wk-hero img.pose { width:100%; height:100%; object-fit:cover; object-position:top; }
+.wk-hero .v { position:absolute; inset:auto 10px 10px 10px; height:34px; }
+.sets { margin-top:18px; display:flex; flex-direction:column; gap:10px; }
+.set { display:flex; justify-content:space-between; align-items:center; background:rgba(23,24,28,0.72); border:1px solid rgba(237,233,224,0.07); border-radius:16px; padding:12px 16px; }
+.set .n { font-weight:600; font-size:14px; }
+.set .r { color:#8A8D93; font-size:13px; }
+.set.active { border-color:rgba(193,18,31,0.75); background:linear-gradient(180deg, rgba(193,18,31,0.16), rgba(193,18,31,0.06)); }
+.seal { width:30px; height:30px; opacity:0.95; }
+
+.segwrap { display:flex; gap:8px; margin-top:20px; }
+.seg { padding:7px 12px; border-radius:999px; font-size:12px; color:#8A8D93; background:rgba(23,24,28,0.7); border:1px solid transparent; }
+.seg.on { color:#fff; background:#C1121F; }
+.chart-card, .rec-card { margin-top:20px; background:rgba(23,24,28,0.72); border:1px solid rgba(237,233,224,0.08); border-radius:22px; padding:18px; }
+.chart-card .row { display:flex; justify-content:space-between; margin-bottom:6px; }
+.chart-card .lab { color:#8A8D93; font-size:12px; }
+.chart-card .bars { display:flex; gap:16px; align-items:flex-end; height:140px; margin-top:14px; }
+.chart-card .bar { flex:1; background:linear-gradient(180deg, #C1121F, #8E0E17); border-radius:8px 8px 3px 3px; position:relative; }
+.chart-card .bar span { position:absolute; top:-18px; left:0; right:0; text-align:center; font-size:10px; color:#8A8D93; }
+.rec-card .wrap { display:flex; align-items:center; gap:16px; margin-top:10px; }
+.rec-card .donut { width:112px; height:112px; border-radius:50%; background:conic-gradient(#2E9E77 0 87%, rgba(237,233,224,0.08) 87%); position:relative; }
+.rec-card .donut::before { content:""; position:absolute; inset:14px; border-radius:50%; background:#101114; }
+.rec-card .donut b { position:absolute; inset:0; display:grid; place-items:center; font-weight:800; font-size:22px; }
+.legend { display:flex; flex-direction:column; gap:8px; font-size:12.5px; color:#C7C9CC; }
+.legend i { display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:8px; }
+
+.lib-grid { margin-top:18px; display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.lib-card { background:rgba(23,24,28,0.72); border:1px solid rgba(237,233,224,0.08); border-radius:18px; padding:14px; }
+.lib-card .glyphwrap { height:64px; display:grid; place-items:center; background:#101114; border-radius:14px; }
+.lib-card .glyphwrap img { width:52px; height:52px; }
+.lib-card .t { margin-top:10px; font-weight:600; font-size:13px; }
+.lib-card .m { color:#8A8D93; font-size:11.5px; margin-top:2px; }
+.wormrow { margin-top:18px; display:flex; gap:10px; }
+.wormrow .wc { flex:1; background:rgba(23,24,28,0.72); border:1px solid rgba(237,233,224,0.08); border-radius:16px; padding:10px; text-align:center; }
+.wormrow img { height:56px; }
+.wormrow .t { font-size:11px; color:#8A8D93; margin-top:6px; }
+</style>
+</head>
+<body style="padding-top:0">
+<div class="topnav" style="position:sticky; top:0; z-index:9; background:rgba(20,20,24,0.92)">
+  <a href="#s-work" class="on" onclick="pick(this)">Workout</a>
+  <a href="#s-workout" onclick="pick(this)">Session</a>
+  <a href="#s-stats" onclick="pick(this)">Stats</a>
+  <a href="#s-lib" onclick="pick(this)">Library</a>
+</div>
+<script>function pick(el){document.querySelectorAll('.topnav a').forEach(a=>a.classList.remove('on'));el.classList.add('on');}</script>
+
+<div class="stage" id="s-work">
+
+<div class="lane"><h2>SCREEN 01 — Today (workout hub)</h2>
+<div class="frame">
+  <img class="bg" src="../../frontend/public/assets/user/bg-home.svg" alt="">
+  <div class="content">
+    <div class="brandrow">
+      <img class="word" src="../../frontend/public/assets/user/wordmark.svg" alt="TOJI">
+      <img src="../../frontend/public/assets/user/seal-begin.svg" alt="初心" style="width:34px">
+    </div>
+    <div class="hello">
+      <div class="hi">Good deadlift day morning.</div>
+      <div class="kanji" style="letter-spacing:0.35em; color:#C1121F; margin-top:6px; font-size:13px;">頑張れ · 體</div>
+      <div class="sub">6 attempts logged this week · 1 PR pending</div>
+    </div>
+    <div class="tally"><img src="../../frontend/public/assets/user/tally-4.svg" alt=""> 4 / 5 attempts this week</div>
+    <div class="progress-card">
+      <div class="head"><span>Today's Progress</span><span class="k">今日</span></div>
+      <div class="ringwrap">
+        <div class="ring"><b>62%</b></div>
+        <div class="pinfo">
+          <div class="r"><span class="dot"></span> Total volume 8,420 kg</div>
+          <div class="r"><span class="dot" style="background:#8A8D93"></span> Avg recovery 74%</div>
+          <div class="r"><span class="dot" style="background:#C1121F"></span> Vow broken ×1</div>
+        </div>
+      </div>
+    </div>
+    <div class="quote">
+      <img src="../../frontend/public/assets/user/bubble-round-left.svg" alt="">
+      <div>
+        <div class="q">The worm doesn't care what anxiety has to say.</div>
+        <div class="qs">Daily vow · 「縛」</div>
+      </div>
+    </div>
+    <a class="cta" href="#"><img src="../../frontend/public/assets/user/brush-btn.svg" alt=""><span>START WORKOUT</span></a>
+  </div>
+</div></div>
+
+<div class="lane"><h2>SCREEN 02 — Live session</h2>
+<div class="frame" id="s-workout">
+  <img class="bg" src="../../frontend/public/assets/user/bg-workout.svg" alt="">
+  <div class="content">
+    <div class="wk-top">
+      <div class="wk-back">‹</div>
+      <div style="flex:1; text-align:left">
+        <div class="wk-title">Deadlift — Domain Day</div>
+        <div class="wk-kicker display">SETS × REPS · 黒閃</div>
+      </div>
+      <img src="../../frontend/public/assets/user/seal-vow.svg" style="width:34px" alt="縛">
+    </div>
+    <div class="wk-hero">
+      <img class="pose" src="../../frontend/public/assets/user/ink-athlete-deadlift.svg" alt="">
+      <img class="v" src="../../frontend/public/assets/user/torn-edge.svg" alt="">
+    </div>
+    <div class="sets">
+      <div class="set active">
+        <span class="n">Set 3 · 5 reps · 140 kg</span>
+        <span style="display:flex;align-items:center;gap:10px"><span class="r display" style="letter-spacing:0.18em">黒閃 ×1</span><img class="seal" src="../../frontend/public/assets/user/seal-success.svg" alt=""></span>
+      </div>
+      <div class="set"><span class="n">Set 1 · 5 reps · 130 kg</span><img class="seal" src="../../frontend/public/assets/user/seal-success.svg" alt=""></div>
+      <div class="set"><span class="n">Set 2 · 4 reps · 135 kg</span><img class="seal" src="../../frontend/public/assets/user/seal-record.svg" alt=""></div>
+    </div>
+    <a class="cta" href="#"><img src="../../frontend/public/assets/user/brush-btn.svg" alt=""><span>LOG SET</span></a>
+  </div>
+</div></div>
+
+<div class="lane"><h2>SCREEN 03 — Stats</h2>
+<div class="frame" id="s-stats">
+  <img class="bg" src="../../frontend/public/assets/user/bg-subtle.svg" alt="">
+  <div class="content">
+    <h1 style="font-weight:800;font-size:24px">Strength Progression</h1>
+    <div class="display" style="letter-spacing:0.3em;color:#C1121F;margin-top:6px;font-size:14px">力 · 成長</div>
+    <div class="segwrap">
+      <span class="seg">7D</span><span class="seg on">30D</span><span class="seg">90D</span><span class="seg">1Y</span>
+    </div>
+    <div class="chart-card">
+      <div class="row"><span class="lab">Deadlift 1RM (kg)</span><span class="lab" style="color:#2E9E77">+4.3%</span></div>
+      <div class="bars">
+        <div class="bar" style="height:52px"><span>120</span></div>
+        <div class="bar" style="height:72px"><span>128</span></div>
+        <div class="bar" style="height:88px"><span>132</span></div>
+        <div class="bar" style="height:116px"><span>138</span></div>
+        <div class="bar" style="height:138px"><span>140</span></div>
+      </div>
+    </div>
+    <div class="chart-card rec-card">
+      <div class="row"><span class="lab">Muscle Recovery</span><span class="lab kanji">今日</span></div>
+      <div class="wrap">
+        <div class="donut"><b>87%</b></div>
+        <div class="legend">
+          <div><i style="background:#2E9E77"></i> Recovered · 回復 ×3</div>
+          <div><i style="background:#8A8D93"></i> Recovering ×1</div>
+          <div><i style="background:#C1121F"></i> Fatigued · 脱力 0</div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:auto; display:flex; align-items:center; justify-content:center; opacity:0.85">
+      <img src="../../frontend/public/assets/user/divider-slash-long.svg" style="width:220px" alt="">
+    </div>
+  </div>
+</div></div>
+
+<div class="lane"><h2>SCREEN 04 — Library</h2>
+<div class="frame" id="s-lib">
+  <img class="bg" src="../../frontend/public/assets/user/bg-subtle.svg" alt="">
+  <div class="content">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h1 style="font-weight:800;font-size:24px">Exercise Library</h1>
+      <img src="../../frontend/public/assets/user/domain-ring.svg" style="width:44px" alt="">
+    </div>
+    <div class="display" style="letter-spacing:0.34em;color:#C1121F;margin-top:6px;font-size:14px">技 · 縛 · 領域展開</div>
+    <div class="lib-grid">
+      <div class="lib-card"><div class="glyphwrap"><img src="../../frontend/public/assets/user/glyph-equipment-barbell.svg" alt=""></div><div class="t">Barbell Deadlift</div><div class="m">posterior · 5 sets</div></div>
+      <div class="lib-card"><div class="glyphwrap"><img src="../../frontend/public/assets/user/glyph-equipment-dumbbell.svg" alt=""></div><div class="t">DB Press</div><div class="m">chest · 4 sets</div></div>
+      <div class="lib-card"><div class="glyphwrap"><img src="../../frontend/public/assets/user/glyph-equipment-kettlebell.svg" alt=""></div><div class="t">Kettlebell Swing</div><div class="m">explosive · 4 sets</div></div>
+      <div class="lib-card"><div class="glyphwrap"><img src="../../frontend/public/assets/user/glyph-equipment-cable.svg" alt=""></div><div class="t">Cable Row</div><div class="m">back · 4 sets</div></div>
+      <div class="lib-card"><div class="glyphwrap"><img src="../../frontend/public/assets/user/glyph-equipment-bodyweight.svg" alt=""></div><div class="t">Hollow Holds</div><div class="m">core · 4 sets</div></div>
+      <div class="lib-card"><div class="glyphwrap"><img src="../../frontend/public/assets/user/glyph-equipment-band.svg" alt=""></div><div class="t">Band Pull-apart</div><div class="m">rear delts · 3 sets</div></div>
+      <div class="lib-card"><div class="glyphwrap"><img src="../../frontend/public/assets/user/glyph-equipment-machine.svg" alt=""></div><div class="t">Lat Pulldown</div><div class="m">lats · 4 sets</div></div>
+      <div class="lib-card"><div class="glyphwrap"><img src="../../frontend/public/assets/user/glyph-equipment-cardio.svg" alt=""></div><div class="t">Jump Rope</div><div class="m">finisher · 8 min</div></div>
+    </div>
+    <div class="wormrow">
+      <div class="wc"><img src="../../frontend/public/assets/user/mascot-train.svg" alt=""><div class="t">Gym Rat</div></div>
+      <div class="wc"><img src="../../frontend/public/assets/user/mascot-think.svg" alt=""><div class="t">Thinking</div></div>
+      <div class="wc"><img src="../../frontend/public/assets/user/mascot-flash.svg" alt=""><div class="t">Black Flash!</div></div>
+    </div>
+  </div>
+</div></div>
+
+</div>
+</body>
+</html>

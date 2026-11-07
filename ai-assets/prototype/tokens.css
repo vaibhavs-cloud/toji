@@ -1,0 +1,26 @@
+:root {
+  --ink: #0B0B0D;
+  --graphite: #17181C;
+  --graphite-2: #1E1F24;
+  --bone: #EDE9E0;
+  --smoke: #8A8D93;
+  --blood: #C1121F;
+  --blood-pressed: #8E0E17;
+  --blood-bright: #E5312D;
+  --jade: #2E9E77;
+  --radius-lg: 24px;
+  --radius-md: 18px;
+  --radius-sm: 12px;
+  --font-display: "Bebas Neue", "Arial Narrow", sans-serif;
+  --font-body: "Inter", "Segoe UI", sans-serif;
+  --font-serif-jp: "Shippori Mincho B1", "Noto Serif JP", serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: #26282B; color: var(--bone); font-family: var(--font-body); }
+.frame {
+  width: 390px; height: 844px; border-radius: 38px; overflow: hidden; position: relative;
+  background: var(--ink); border: 6px solid #000; box-shadow: 0 22px 60px rgba(0,0,0,0.55);
+  flex: 0 0 auto;
+}
+.kanji { font-family: var(--font-serif-jp); }
+.display { font-family: var(--font-display); letter-spacing: 0.04em; }

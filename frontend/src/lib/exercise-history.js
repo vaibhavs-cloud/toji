@@ -1,7 +1,7 @@
 import { metricEntriesForExercise, metricRowsForEntry, bestWeightForEntry, completedRepsOf, modeOf, workoutAt, countsWarmups } from './history.js'
 import { completedVolumeOf, isWarmupRow } from './workout-model.js'
 import { bestSetOf } from './onerm.js'
-import { beatsWeight } from './exercises.js'
+import { beatsWeight, canonicalExId } from './exercises.js'
 import { currentDbLoad, historyAs, volumeFactor, workoutAs } from './dumbbells.js'
 
 // One exercise's past, read back for the history sheet (issue #43): a chart series and the
@@ -123,11 +123,12 @@ export function bestSetFor(S, exId, mode = modeOf({ id: exId }), as) {
   // until it is filed again), so a tie is settled by the start time, not by which came first
   // in the array; within one session the set logged first keeps it.
   let best = null
+  const canon = canonicalExId(exId)
   for (const stored of S?.workouts || []) {
     const w = as ? workoutAs(stored, exId, as) : stored
     let t = null
     for (const en of w.entries || []) {
-      if (en.id !== exId) continue
+      if (en.id !== exId && (!en.id || canonicalExId(en.id) !== canon)) continue
       for (const set of metricRowsForEntry(en, mode)) {
         t ??= workoutAt(w)
         if (!best || better(set, best.set) || (!better(best.set, set) && t < best.t)) best = { d: w.d, set, target: en.target || null, t }

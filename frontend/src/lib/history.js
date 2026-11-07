@@ -4,7 +4,7 @@ import { isOn } from './modules.js'
 import { todayISO, isoOf, weekKey, weekStartOf, fmtNum } from './format.js'
 import { fmtSpeed } from './speed.js'
 import { hasIncline, inclineFrom } from './incline.js'
-import { isCardio, isHold, isOneLimb, isBodyweightEq, isAssisted, betterWeight } from './exercises.js'
+import { isCardio, isHold, isOneLimb, isBodyweightEq, isAssisted, betterWeight, canonicalExId } from './exercises.js'
 import { barWeightFor } from './bar.js'
 import { phaseForSet, modeForSet, modeForEntry, isWarmupRow, isFailureSet, isDropSet, isRestPauseSet, normalizeMode, completedVolumeOf, hasCompletedWork, nextDropWeight, splitBurstReps, makeSideSet, isSideSet, syncSideAggregate, WEIGHT_ORIGIN_MANUAL, dropsOf, clustersOf } from './workout-model.js'
 import { backoffAt, backoffStepOf, backoffWeights } from './backoff.js'
@@ -360,8 +360,11 @@ export function entryRoutineId(w, en) {
 
 // The entry for one exercise in one saved workout. With a routine id it is that routine's own
 // entry — a combined A+B day can hold the same exercise twice, and the second one is not the
-// first one's history. Without, the first one, as it always was.
-const entryIn = (w, exId, rid) => (w.entries || []).find(e => e && e.id === exId && (!rid || entryRoutineId(w, e) === rid))
+// first one's history. Without, the first one, as it always was. Matches stable canonical ID as well.
+const entryIn = (w, exId, rid) => {
+  const canon = canonicalExId(exId)
+  return (w.entries || []).find(e => e && (e.id === exId || (e.id && canonicalExId(e.id) === canon)) && (!rid || entryRoutineId(w, e) === rid))
+}
 
 /**
  * Whether "last time" is the exercise's last session in any workout rather than in the routine
@@ -1274,10 +1277,11 @@ export function metricModeForEntry(entry, fallback = null) {
   return modeForEntry(entry, fallback)
 }
 
-/** Every saved occurrence of an exercise in one workout, in its stored order. */
+/** Every saved occurrence of an exercise in one workout, in its stored order, matching stable global ID. */
 export function entriesForExercise(workout, exId) {
   if (exId == null || exId === '') return []
-  return (workout?.entries || []).filter(entry => entry?.id === exId)
+  const canon = canonicalExId(exId)
+  return (workout?.entries || []).filter(entry => entry?.id === exId || (entry?.id && canonicalExId(entry.id) === canon))
 }
 
 /** Metric data for every occurrence in one workout, including legacy reps topW-only records. */

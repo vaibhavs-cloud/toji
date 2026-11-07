@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { t } from '../lib/i18n.js'
 import { liveHeartRate, onLiveHeartRate } from '../lib/phone-workout.js'
+import Icon from './Icon.jsx'
 
 // " · ♥ 128" in the workout header while the iPhone's own workout session (#818) has a fresh
 // reading from AirPods that measure it. Nothing at all without one: on the web, on Android, with an
@@ -14,5 +15,5 @@ export default function LiveHeartRate() {
     return () => { off(); clearInterval(iv) }
   }, [])
   if (!hr) return null
-  return <> · <span className="live-hr" aria-label={t('Heart rate') + ' ' + hr.bpm}>♥ {hr.bpm}</span></>
+  return <> · <span className="live-hr" aria-label={t('Heart rate') + ' ' + hr.bpm}><Icon name="heart" style={{ fontSize: '0.85em', verticalAlign: '-0.1em', marginRight: 2 }} />{hr.bpm}</span></>
 }

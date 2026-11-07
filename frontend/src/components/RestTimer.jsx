@@ -17,6 +17,10 @@ const clock = sec => Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '
 export function adjustRestSheet() {
   const tm = useUI.getState().timer
   if (!tm) return
+  if (useUI.getState().openDomainTimer) {
+    useUI.getState().openDomainTimer(tm.left || 90)
+    return
+  }
   const opened = tm.ready ? 0 : Math.min(tm.left, REST_MAX)
   durationSheet({
     title: t('Time left'), value: opened, max: REST_MAX, off: t('Skip'),

@@ -67,7 +67,7 @@ function ShareRoutine({ routine, close }) {
         await shareAsPlanFile(st, routine)
         return
       }
-      await shareLink(link.url, t('Here’s my {0} on openGym 💪', name), name)
+      await shareLink(link.url, t('Here’s my {0} on Toji Fitness', name), name)
     } catch {
       setBusy(false)
       toast(t('Couldn’t make a link for this one.'))

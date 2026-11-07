@@ -58,7 +58,7 @@ export function workoutCardModel(w, { unit, nameOf, warmups = false, streak = 0 
       ...(ms >= 60000 ? [{ label: t('Duration'), value: fmtDur(ms) }] : []),
       { label: t('Volume'), value: fmtVol(warmups ? workoutVolume(w, { warmups }) : (w.vol ?? workoutVolume(w)), unit) },
       { label: t('Sets'), value: fmtNum(sets) },
-      { label: t('PRs'), value: records.length ? '🏆 ' + fmtNum(records.length) : '–' },
+      { label: t('PRs'), value: records.length ? fmtNum(records.length) : '–' },
     ],
     records: records.map(r => r.name),
     streak: Number(streak) > 0 ? Number(streak) : 0,

@@ -51,7 +51,7 @@ export default function CoachSetup() {
   const openSheet = useUI(s => s.openSheet)
 
   const [choice, setChoice] = useState(null)              // 'server' | 'byok' | null
-  const [provider, setProvider] = useState(coachLocal?.provider || 'anthropic')
+  const [provider, setProvider] = useState(coachLocal?.provider || 'nvidia')
   const [baseUrl, setBaseUrl] = useState(coachLocal?.baseUrl || '')
   const [model, setModel] = useState(coachLocal?.model || '')
   const [key, setKey] = useState('')

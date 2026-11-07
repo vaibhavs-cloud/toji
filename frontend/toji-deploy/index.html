@@ -1,0 +1,2952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Toji Fitness — Zero Cursed Energy</title>
+  
+  <!-- Web App Manifest & Mobile Capability -->
+  <meta name="theme-color" content="#0B0B0D">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <!-- Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+JP:wght@700;900&family=Playfair+Display:ital,wght@1,700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ==========================================================================
+       TOJI DESIGN SYSTEM — PRODUCTION HARDWARE & MOCKUP SPEC
+       Reference: Master Mockup Screens 1-5 + User Mobile Feedback (Redmi 13C 90Hz)
+       ========================================================================== */
+    :root {
+      /* Core Dark Palette */
+      --void-bg: #0B0B0D;
+      --surface-1: #121318;
+      --surface-2: #181920;
+      --surface-3: #22232C;
+      --surface-elevated: #282934;
+      
+      /* Crimson Accents */
+      --crimson: #C1121F;
+      --crimson-bright: #E5312D;
+      --crimson-dark: #8A0C14;
+      --blood-glow: rgba(193, 18, 31, 0.45);
+      --blood-subtle: rgba(193, 18, 31, 0.12);
+
+      /* Jade Status & Accent */
+      --jade: #10B981;
+      --jade-mid: #059669;
+      --jade-glow: rgba(16, 185, 129, 0.35);
+      --fatigued: #EF4444;
+
+      /* High-Contrast Typography */
+      --parchment: #F4F1EA;
+      --text-sub: #D1CEC7;
+      --text-muted: #8E8D96;
+      --text-dim: #5C5D66;
+
+      /* Borders */
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-card: rgba(255, 255, 255, 0.12);
+      --border-crimson: rgba(193, 18, 31, 0.5);
+
+      /* Motion & Frame Timings (Redmi 13C 90Hz & iOS 120Hz) */
+      --ease-manga: cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-punch: cubic-bezier(0.2, 1.4, 0.4, 1);
+      --dur-fast: 167ms; /* 15 frames at 90Hz */
+
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    html, body {
+      background-color: var(--void-bg);
+      color: var(--parchment);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      overflow-x: hidden;
+      width: 100%;
+      height: 100%;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Screentone & Manga Grain Overlay */
+    .texture-screentone-layer {
+      position: fixed;
+      inset: 0;
+      background-image: url('assets/toji/texture-screentone.webp');
+      background-size: 160px;
+      opacity: 0.035;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* App Shell — Responsive Fullscreen on Mobile, Framed on Desktop */
+    .app-root {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #060608;
+    }
+
+    .device-viewport {
+      position: relative;
+      width: 100%;
+      max-width: 440px;
+      height: 100%;
+      max-height: 940px;
+      background: var(--void-bg);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 0 80px rgba(0, 0, 0, 0.95), 0 0 30px rgba(193, 18, 31, 0.15);
+    }
+
+    @media (max-width: 600px) {
+      .app-root {
+        background: var(--void-bg);
+      }
+      .device-viewport {
+        max-width: 100%;
+        max-height: 100%;
+        height: 100dvh;
+        box-shadow: none;
+      }
+    }
+
+    /* Scrollable Screen Content Container */
+    .screen-scroller {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      padding: calc(var(--safe-top) + 16px) 18px calc(var(--safe-bottom) + 84px) 18px;
+      position: relative;
+    }
+
+    .screen-scroller::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* Screen Transition Engine */
+    .screen-view {
+      display: none;
+      opacity: 0;
+      transform: translate3d(0, 8px, 0);
+      transition: opacity var(--dur-fast) var(--ease-manga), transform var(--dur-fast) var(--ease-manga);
+    }
+
+    .screen-view.active {
+      display: block;
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+
+    /* ==========================================================================
+       BOTTOM 5-TAB BAR (MATCHING MOCKUP)
+       ========================================================================== */
+    .nav-tabbar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: calc(64px + var(--safe-bottom));
+      padding-bottom: var(--safe-bottom);
+      background: rgba(14, 15, 19, 0.95);
+      border-top: 1px solid var(--border-card);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      z-index: 100;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+
+    .nav-tab-btn {
+      flex: 1;
+      height: 100%;
+      background: none;
+      border: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: color 0.15s var(--ease-manga);
+    }
+
+    .nav-tab-btn.active {
+      color: var(--crimson-bright);
+    }
+
+    .nav-tab-icon {
+      width: 22px;
+      height: 22px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: transform 0.15s var(--ease-manga);
+    }
+
+    .nav-tab-btn.active .nav-tab-icon {
+      transform: scale(1.12);
+    }
+
+    .nav-tab-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+    /* ==========================================================================
+       SCREEN 1: HOME VIEW
+       ========================================================================== */
+    .home-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .home-welcome-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .home-welcome-name {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--parchment);
+      letter-spacing: -0.5px;
+      margin-top: 2px;
+    }
+
+    .home-avatar-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 99px;
+      border: 1.5px solid var(--crimson);
+      overflow: hidden;
+      background: var(--surface-2);
+      cursor: pointer;
+      box-shadow: 0 0 12px var(--blood-subtle);
+    }
+
+    .home-avatar-btn img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Master Unified Home Hero Banner */
+    .home-hero-master-card {
+      position: relative;
+      height: 195px;
+      border-radius: 22px;
+      border: 1px solid var(--border-card);
+      background-image: url('assets/toji/home-hero-master.webp');
+      background-size: cover;
+      background-position: center right;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 24px 20px;
+      margin-bottom: 18px;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7);
+    }
+
+    .home-hero-master-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, rgba(11, 11, 13, 0.45) 0%, rgba(11, 11, 13, 0.15) 50%, transparent 100%);
+      pointer-events: none;
+    }
+
+    .hero-quote-box {
+      position: relative;
+      z-index: 2;
+      max-width: 62%;
+    }
+
+    .hero-quote-phrase {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-style: italic;
+      font-size: 21px;
+      font-weight: 700;
+      line-height: 1.25;
+      color: var(--parchment);
+      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.95);
+    }
+
+    .hero-quote-credit {
+      font-family: 'Inter', sans-serif;
+      font-style: normal;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+      margin-top: 10px;
+    }
+
+    /* Today's Progress Card */
+    .progress-card {
+      background: var(--surface-1);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 18px 20px;
+      margin-bottom: 18px;
+    }
+
+    .progress-card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--parchment);
+      margin-bottom: 16px;
+    }
+
+    .progress-body {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .progress-ring-box {
+      position: relative;
+      width: 76px;
+      height: 76px;
+      flex-shrink: 0;
+    }
+
+    .progress-ring-box svg {
+      transform: rotate(-90deg);
+      width: 76px;
+      height: 76px;
+    }
+
+    .progress-ring-bg {
+      fill: none;
+      stroke: var(--surface-3);
+      stroke-width: 7;
+    }
+
+    .progress-ring-fill {
+      fill: none;
+      stroke: var(--jade);
+      stroke-width: 7;
+      stroke-linecap: round;
+      stroke-dasharray: 201;
+      stroke-dashoffset: 76; /* 62% */
+      filter: drop-shadow(0 0 6px var(--jade-glow));
+    }
+
+    .progress-ring-text {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--parchment);
+    }
+
+    .progress-metrics {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+    }
+
+    .progress-metric-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .metric-icon-svg {
+      width: 20px;
+      height: 20px;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .metric-title {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .metric-val {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--parchment);
+      margin-top: 1px;
+    }
+
+    /* Start Workout Crimson CTA */
+    .btn-start-workout-cta {
+      width: 100%;
+      height: 54px;
+      background: linear-gradient(90deg, #A7101B 0%, #C1121F 50%, #8A0C14 100%);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 99px;
+      color: #FFFFFF;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(193, 18, 31, 0.4);
+      margin-bottom: 22px;
+      transition: transform 0.15s var(--ease-punch);
+    }
+
+    .btn-start-workout-cta:active {
+      transform: scale(0.97);
+    }
+
+    /* Quick Access 3-Grid */
+    .quick-access-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .quick-access-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .quick-card {
+      background: var(--surface-1);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 16px 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: border-color 0.15s, transform 0.15s;
+    }
+
+    .quick-card:active {
+      border-color: var(--crimson);
+      transform: translateY(-2px);
+    }
+
+    .quick-card-icon {
+      width: 24px;
+      height: 24px;
+      color: var(--crimson-bright);
+    }
+
+    .quick-card-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--parchment);
+    }
+
+    /* Extra Tools Row */
+    .home-extra-tools {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .tool-pill-btn {
+      flex: 1;
+      padding: 10px 12px;
+      background: var(--surface-1);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      color: var(--text-sub);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .tool-pill-btn svg {
+      width: 15px;
+      height: 15px;
+      color: var(--crimson-bright);
+    }
+
+    /* ==========================================================================
+       SCREEN 2: WORKOUT VIEW (CLEAN CARD HERO LAYOUT)
+       ========================================================================== */
+    .workout-header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .nav-icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--surface-1);
+      border: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--parchment);
+      cursor: pointer;
+    }
+
+    .workout-routine-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--parchment);
+      letter-spacing: -0.3px;
+    }
+
+    .workout-eye-badge {
+      width: 62px;
+      height: 28px;
+      border-radius: 6px;
+      background: url('assets/toji/manga-eye.webp') center/cover no-repeat;
+      border: 1px solid var(--border-card);
+    }
+
+    /* Clean Upper Art Card with Left Kanji Margin */
+    .workout-stage-row {
+      position: relative;
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .workout-kanji-pillar {
+      writing-mode: vertical-rl;
+      font-family: 'Noto Sans JP', serif;
+      font-size: 17px;
+      font-weight: 900;
+      letter-spacing: 0.4em;
+      color: var(--crimson);
+      text-shadow: 0 0 14px var(--blood-glow);
+      opacity: 0.9;
+      flex-shrink: 0;
+      padding: 6px 0;
+    }
+
+    .workout-art-stage {
+      flex: 1;
+      position: relative;
+      height: 220px;
+      border-radius: 20px;
+      border: 1px solid var(--border-card);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 18px;
+      background-size: cover;
+      background-position: center 20%;
+      background-repeat: no-repeat;
+      transition: background-image 0.25s var(--ease-manga);
+    }
+
+    .workout-art-stage::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(0deg, #0B0B0D 0%, rgba(11, 11, 13, 0.7) 45%, rgba(11, 11, 13, 0.1) 100%);
+      pointer-events: none;
+    }
+
+    .stage-exercise-info {
+      position: relative;
+      z-index: 2;
+    }
+
+    .stage-exercise-name {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--parchment);
+      line-height: 1.15;
+      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.95);
+    }
+
+    .stage-exercise-meta {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    /* Muscle Group Exercise Switcher Ribbon */
+    .exercise-switcher-ribbon {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 12px;
+      margin-bottom: 14px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .exercise-switcher-ribbon::-webkit-scrollbar {
+      display: none;
+    }
+
+    .ex-switch-pill {
+      white-space: nowrap;
+      padding: 6px 14px;
+      border-radius: 99px;
+      background: var(--surface-1);
+      border: 1px solid var(--border-subtle);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s var(--ease-manga);
+    }
+
+    .ex-switch-pill.active {
+      background: var(--surface-3);
+      border-color: var(--crimson);
+      color: var(--parchment);
+      box-shadow: 0 0 10px var(--blood-subtle);
+    }
+
+    /* Sets Table (Borderless Minimalist) */
+    .sets-minimal-table {
+      width: 100%;
+      margin-bottom: 18px;
+    }
+
+    .sets-table-head {
+      display: grid;
+      grid-template-columns: 48px 1fr 1fr 48px;
+      padding: 8px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+    }
+
+    .set-table-row {
+      display: grid;
+      grid-template-columns: 48px 1fr 1fr 48px;
+      padding: 12px 10px;
+      align-items: center;
+      font-size: 14px;
+      font-weight: 600;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 10px;
+      transition: background 0.15s;
+    }
+
+    .set-table-row.active-row {
+      background: rgba(193, 18, 31, 0.10);
+    }
+
+    .set-table-row.active-row .set-num,
+    .set-table-row.active-row .set-wt {
+      color: var(--crimson-bright);
+      font-weight: 800;
+    }
+
+    .set-status-toggle {
+      width: 28px;
+      height: 28px;
+      border-radius: 99px;
+      border: none;
+      background: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      margin: 0 auto;
+    }
+
+    .set-status-toggle.checked svg {
+      color: var(--jade);
+    }
+
+    .set-status-toggle.pending svg {
+      color: var(--crimson-bright);
+    }
+
+    .btn-add-set-row {
+      width: 100%;
+      padding: 10px;
+      background: none;
+      border: 1px dashed var(--border-subtle);
+      border-radius: 12px;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+    /* Gojo Speech Bubble Coaching Card */
+    .gojo-coach-card {
+      background: #14151B;
+      border: 1px solid var(--border-card);
+      border-radius: 18px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 18px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    }
+
+    .gojo-speech-bubble {
+      position: relative;
+      background: #1C1E26;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 10px 14px;
+      font-size: 13px;
+      line-height: 1.35;
+      color: var(--parchment);
+      flex: 1;
+    }
+
+    .gojo-speech-bubble::after {
+      content: '';
+      position: absolute;
+      right: -8px;
+      top: 50%;
+      transform: translateY(-50%);
+      border-width: 6px 0 6px 8px;
+      border-style: solid;
+      border-color: transparent transparent transparent #1C1E26;
+    }
+
+    .gojo-mascot-sticker {
+      width: 52px;
+      height: 52px;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .gojo-mascot-sticker img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
+    }
+
+    /* Finish Session Distressed Button */
+    .btn-finish-distressed {
+      width: 100%;
+      height: 52px;
+      background: linear-gradient(90deg, #A7101B 0%, #C1121F 50%, #8A0C14 100%);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 99px;
+      color: #FFFFFF;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 6px 22px rgba(193, 18, 31, 0.45);
+      margin-bottom: 14px;
+      transition: transform 0.15s;
+    }
+
+    .btn-finish-distressed:active {
+      transform: scale(0.97);
+    }
+
+    /* Action Trigger Buttons */
+    .workout-action-triggers {
+      display: flex;
+      gap: 10px;
+    }
+
+    .action-trigger-btn {
+      flex: 1;
+      padding: 10px 0;
+      background: var(--surface-1);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      color: var(--parchment);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .action-trigger-btn.special {
+      border-color: var(--crimson);
+      color: var(--crimson-bright);
+    }
+
+    /* ==========================================================================
+       SCREEN 3: STATS VIEW
+       ========================================================================== */
+    .stats-header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .stats-time-pills {
+      display: flex;
+      background: var(--surface-1);
+      border-radius: 99px;
+      padding: 3px;
+      gap: 4px;
+      margin-bottom: 18px;
+    }
+
+    .time-pill {
+      flex: 1;
+      padding: 8px 0;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      border-radius: 99px;
+      cursor: pointer;
+    }
+
+    .time-pill.active {
+      background: var(--crimson);
+      color: #FFFFFF;
+      box-shadow: 0 2px 10px rgba(193, 18, 31, 0.4);
+    }
+
+    .progression-chart-card {
+      background: var(--surface-1);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+
+    .chart-card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--parchment);
+      margin-bottom: 14px;
+    }
+
+    .chart-svg-box {
+      width: 100%;
+      height: 130px;
+    }
+
+    .stats-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .stat-tile {
+      background: var(--surface-1);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 14px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .stat-tile-icon {
+      width: 20px;
+      height: 20px;
+      color: var(--crimson-bright);
+    }
+
+    .stat-tile-title {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .stat-tile-val {
+      font-size: 17px;
+      font-weight: 900;
+      color: var(--parchment);
+    }
+
+    /* Muscle Recovery Donut */
+    .recovery-card {
+      background: var(--surface-1);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+
+    .recovery-body {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .recovery-legend {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-sub);
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 99px;
+    }
+
+    .manga-peek-banner {
+      height: 74px;
+      border-radius: 16px;
+      background: url('assets/toji/peek-left.webp') center/cover no-repeat;
+      border: 1px solid var(--border-card);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 0 16px;
+    }
+
+    .manga-peek-banner::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, rgba(11, 11, 13, 0.1) 0%, rgba(11, 11, 13, 0.85) 100%);
+    }
+
+    .peek-banner-quote {
+      position: relative;
+      z-index: 2;
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      color: var(--parchment);
+      text-transform: uppercase;
+    }
+
+    /* ==========================================================================
+       SCREEN 4: WEEKLY PLAN VIEW
+       ========================================================================== */
+    .plan-week-pager {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-sub);
+      margin-bottom: 16px;
+    }
+
+    .plan-days-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    .day-row-card {
+      background: var(--surface-1);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: border-color 0.15s;
+    }
+
+    .day-row-card.active-today {
+      border-color: var(--crimson);
+      background: rgba(193, 18, 31, 0.08);
+    }
+
+    .day-info-left {
+      width: 48px;
+    }
+
+    .day-name {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--parchment);
+    }
+
+    .day-date {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .day-split-center {
+      flex: 1;
+      padding: 0 12px;
+    }
+
+    .split-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--parchment);
+    }
+
+    .split-targets {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .badge-done {
+      width: 24px;
+      height: 24px;
+      border-radius: 99px;
+      background: var(--jade);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #000;
+    }
+
+    .badge-play {
+      width: 26px;
+      height: 26px;
+      border-radius: 99px;
+      background: var(--crimson);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #FFF;
+      box-shadow: 0 0 10px var(--blood-glow);
+    }
+
+    /* ==========================================================================
+       SCREEN 5: EXERCISE LIBRARY
+       ========================================================================== */
+    .library-search-box {
+      background: var(--surface-1);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .library-search-box input {
+      background: none;
+      border: none;
+      outline: none;
+      color: var(--parchment);
+      font-size: 13px;
+      width: 100%;
+    }
+
+    .library-category-pills {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 14px;
+    }
+
+    .library-category-pills::-webkit-scrollbar {
+      display: none;
+    }
+
+    .cat-pill {
+      white-space: nowrap;
+      padding: 6px 14px;
+      border-radius: 99px;
+      background: var(--surface-1);
+      border: 1px solid var(--border-subtle);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    .cat-pill.active {
+      background: var(--crimson);
+      border-color: var(--crimson);
+      color: #FFFFFF;
+    }
+
+    .exercise-2col-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .ex-grid-card {
+      background: var(--surface-1);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      cursor: pointer;
+      transition: border-color 0.15s, transform 0.15s;
+    }
+
+    .ex-grid-card:active {
+      border-color: var(--crimson);
+      transform: scale(0.98);
+    }
+
+    .ex-grid-art {
+      height: 94px;
+      border-radius: 12px;
+      background-size: cover;
+      background-position: center;
+      background-color: #101114;
+    }
+
+    .ex-grid-name {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--parchment);
+    }
+
+    .ex-grid-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .infinity-banner {
+      height: 74px;
+      border-radius: 16px;
+      background: url('assets/toji/peek-right.webp') center/cover no-repeat;
+      border: 1px solid var(--border-card);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+    }
+
+    .infinity-banner::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, rgba(11, 11, 13, 0.9) 0%, rgba(11, 11, 13, 0.4) 100%);
+    }
+
+    .infinity-banner-text {
+      position: relative;
+      z-index: 2;
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      color: var(--parchment);
+    }
+
+    .infinity-banner-stamp {
+      position: relative;
+      z-index: 2;
+      font-family: 'Noto Sans JP', serif;
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--crimson-bright);
+      text-shadow: 0 0 10px var(--blood-glow);
+    }
+
+    /* ==========================================================================
+       SCREEN 6: WORKOUT HISTORY LOG (OPEN GYM AUDIT)
+       ========================================================================== */
+    .history-card-item {
+      background: var(--surface-1);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .history-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .history-card-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--parchment);
+    }
+
+    .history-card-date {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .history-pr-tag {
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(193, 18, 31, 0.15);
+      border: 1px solid var(--crimson);
+      color: var(--crimson-bright);
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .history-stats-row {
+      display: flex;
+      gap: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+      padding-top: 10px;
+      font-size: 12px;
+      color: var(--text-sub);
+    }
+
+    /* ==========================================================================
+       SCREEN 7: SETTINGS & HEAVENLY RESTRICTION VOWS
+       ========================================================================== */
+    .settings-section-title {
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin: 18px 0 8px 4px;
+    }
+
+    .settings-list-card {
+      background: var(--surface-1);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+
+    .settings-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      font-size: 14px;
+      color: var(--parchment);
+    }
+
+    .settings-row:last-child {
+      border-bottom: none;
+    }
+
+    /* Toggle Switch */
+    .toggle-switch {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      background: var(--surface-3);
+      border-radius: 99px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .toggle-switch.on {
+      background: var(--crimson);
+    }
+
+    .toggle-switch-thumb {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 18px;
+      height: 18px;
+      background: #FFFFFF;
+      border-radius: 99px;
+      transition: transform 0.2s;
+    }
+
+    .toggle-switch.on .toggle-switch-thumb {
+      transform: translateX(20px);
+    }
+
+    /* ==========================================================================
+       MODALS: PLATE CALCULATOR, REST TIMER, BLACK FLASH, EXERCISE DETAIL
+       ========================================================================== */
+    .modal-bottom-sheet {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 1000;
+      display: none;
+      align-items: flex-end;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .modal-bottom-sheet.active {
+      display: flex;
+    }
+
+    .sheet-card-container {
+      width: 100%;
+      background: #14151B;
+      border-top: 1px solid var(--border-card);
+      border-radius: 26px 26px 0 0;
+      padding: 20px 20px calc(var(--safe-bottom) + 24px) 20px;
+      max-height: 85%;
+      overflow-y: auto;
+      animation: sheetSlideUp 0.2s var(--ease-manga);
+    }
+
+    @keyframes sheetSlideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
+    .sheet-grab-bar {
+      width: 40px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 99px;
+      margin: 0 auto 16px auto;
+    }
+
+    .sheet-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .sheet-title-text {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--parchment);
+    }
+
+    .sheet-close-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    /* Plate Calculator Visualizer */
+    .plates-display-bar {
+      height: 60px;
+      background: var(--surface-1);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 6px;
+      margin: 14px 0;
+      overflow-x: auto;
+    }
+
+    .plate-slice {
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 800;
+      color: #000;
+    }
+
+    .plate-25kg { width: 14px; height: 48px; background: #E5312D; color: #FFF; }
+    .plate-20kg { width: 13px; height: 44px; background: #2563EB; color: #FFF; }
+    .plate-15kg { width: 12px; height: 40px; background: #EAB308; }
+    .plate-10kg { width: 11px; height: 36px; background: #10B981; }
+    .plate-5kg  { width: 10px; height: 30px; background: #FFFFFF; }
+
+    /* Black Flash Fullscreen Shockwave */
+    .black-flash-overlay {
+      position: absolute;
+      inset: 0;
+      background: #000;
+      z-index: 10000;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 24px;
+    }
+
+    .black-flash-overlay.active {
+      display: flex;
+      animation: bfScreenFlash 0.15s linear;
+    }
+
+    @keyframes bfScreenFlash {
+      0% { filter: invert(1) brightness(300%); }
+      100% { filter: none; }
+    }
+
+    .bf-frame-bg {
+      position: absolute;
+      inset: 0;
+      background: url('assets/toji/black-flash-frame.webp') center/cover no-repeat;
+      opacity: 0.95;
+    }
+
+    .bf-logo-art {
+      position: relative;
+      z-index: 2;
+      width: 280px;
+      height: 140px;
+      background: url('assets/toji/black-flash-logo.webp') center/contain no-repeat;
+      margin-bottom: 14px;
+      filter: drop-shadow(0 0 24px var(--crimson));
+    }
+
+    .bf-pr-number {
+      position: relative;
+      z-index: 2;
+      font-size: 52px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      color: #FFFFFF;
+      text-shadow: 0 0 20px var(--crimson-bright);
+    }
+
+    .bf-pr-label {
+      position: relative;
+      z-index: 2;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: var(--crimson-bright);
+      margin-top: 4px;
+    }
+
+    .bf-claim-btn {
+      position: relative;
+      z-index: 2;
+      margin-top: 32px;
+      padding: 12px 36px;
+      background: var(--surface-1);
+      border: 1.5px solid var(--crimson);
+      border-radius: 99px;
+      color: var(--parchment);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      cursor: pointer;
+    }
+
+    /* Domain Expansion Rest Timer Modal */
+    .domain-rest-modal {
+      position: absolute;
+      inset: 0;
+      background: #000;
+      z-index: 9999;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .domain-rest-modal.active {
+      display: flex;
+    }
+
+    .domain-backdrop-img {
+      position: absolute;
+      inset: 0;
+      background: url('assets/toji/domain-1.webp') center/cover no-repeat;
+      opacity: 0.8;
+    }
+
+    .domain-ring-spinner {
+      position: relative;
+      z-index: 2;
+      width: 250px;
+      height: 250px;
+      background: url('assets/toji/svg/domain-ring.svg') center/contain no-repeat;
+      animation: spinRing 20s linear infinite;
+    }
+
+    @keyframes spinRing {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .domain-center-info {
+      position: absolute;
+      z-index: 3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .domain-timer-clock {
+      font-size: 58px;
+      font-weight: 900;
+      color: var(--parchment);
+      text-shadow: 0 0 24px var(--crimson);
+      line-height: 1;
+    }
+
+    .domain-tag {
+      font-family: 'Noto Sans JP', sans-serif;
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      color: var(--crimson-bright);
+      margin-top: 8px;
+    }
+
+    .domain-btn-bar {
+      position: relative;
+      z-index: 4;
+      margin-top: 36px;
+      display: flex;
+      gap: 12px;
+    }
+
+    .domain-action-btn {
+      padding: 10px 22px;
+      border-radius: 99px;
+      background: rgba(18, 19, 24, 0.9);
+      border: 1px solid var(--border-card);
+      color: var(--parchment);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .domain-action-btn.resume {
+      background: var(--crimson);
+      border-color: var(--crimson);
+      box-shadow: 0 0 16px var(--blood-glow);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Screen tone Grain -->
+  <div class="texture-screentone-layer"></div>
+
+  <div class="app-root">
+    <div class="device-viewport">
+
+      <!-- SCROLLABLE SCREEN CONTAINER -->
+      <div class="screen-scroller">
+
+        <!-- ====================================================================
+             1. HOME SCREEN (MOCKUP SCREEN 1)
+             ==================================================================== -->
+        <div class="screen-view active" id="view-home">
+          
+          <div class="home-top-bar">
+            <div>
+              <div class="home-welcome-sub">Welcome back,</div>
+              <div class="home-welcome-name">Vaibhav.</div>
+            </div>
+            <div class="home-avatar-btn" id="btn-avatar-settings">
+              <img src="assets/toji/mascot-1.webp" alt="Avatar">
+            </div>
+          </div>
+
+          <!-- Direct Android APK Download Button (Zero Cursed Energy Native OS) -->
+          <a href="https://tmpfiles.org/dl/wJAf5hoS4vbr/toji-debug.apk" target="_blank" download="toji-debug.apk" class="btn-download-apk-pill" style="display: flex; align-items: center; justify-content: center; gap: 9px; background: linear-gradient(135deg, rgba(193, 18, 31, 0.25) 0%, rgba(14, 15, 18, 0.95) 100%); border: 1px solid rgba(193, 18, 31, 0.5); color: #F4F1EA; text-decoration: none; padding: 12px 18px; border-radius: 14px; font-weight: 800; font-size: 13px; letter-spacing: 0.06em; margin-bottom: 16px; box-shadow: 0 6px 20px rgba(193, 18, 31, 0.25); text-transform: uppercase;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E5312D" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Download Native Android APK (v1.4.4 · 86.8 MB)</span>
+          </a>
+
+          <!-- Master Unified Hero Card: Seamless Single Image (Zero Box Artifacts!) -->
+          <div class="home-hero-master-card">
+            <div class="hero-badge-tag" style="position: absolute; top: 18px; left: 20px; z-index: 3; display: flex; align-items: center; gap: 8px;">
+              <span style="font-family: 'Noto Sans JP', serif; font-size: 13px; font-weight: 900; color: #E5312D; letter-spacing: 0.22em; background: rgba(193, 18, 31, 0.16); padding: 3px 9px; border-radius: 6px; border: 1px solid rgba(193, 18, 31, 0.35); text-shadow: 0 0 10px rgba(193, 18, 31, 0.5);">天与呪縛</span>
+              <span style="font-size: 11px; font-weight: 700; color: rgba(244, 241, 234, 0.75); letter-spacing: 0.12em; text-transform: uppercase;">HEAVENLY RESTRICTION</span>
+            </div>
+            <div class="hero-quote-box" style="margin-top: 36px;">
+              <div class="hero-quote-phrase">"Don't stop.<br>Keep going."</div>
+              <div class="hero-quote-credit">— Toji Fushiguro</div>
+            </div>
+          </div>
+
+          <!-- Today's Progress Card -->
+          <div class="progress-card">
+            <div class="progress-card-title">Today's Progress</div>
+            <div class="progress-body">
+              
+              <div class="progress-ring-box">
+                <svg viewBox="0 0 76 76">
+                  <circle class="progress-ring-bg" cx="38" cy="38" r="32"/>
+                  <circle class="progress-ring-fill" cx="38" cy="38" r="32"/>
+                </svg>
+                <div class="progress-ring-text">62%</div>
+              </div>
+
+              <div class="progress-metrics">
+                <div class="progress-metric-row">
+                  <svg class="metric-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 5v14M18 5v14M2 9v6M22 9v6M6 12h12"/></svg>
+                  <div>
+                    <div class="metric-title">Workout</div>
+                    <div class="metric-val">Completed 1/1</div>
+                  </div>
+                </div>
+
+                <div class="progress-metric-row">
+                  <!-- Mathematical SVG Flame (Zero Emojis!) -->
+                  <svg class="metric-icon-svg" style="color: var(--crimson-bright);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+                  <div>
+                    <div class="metric-title">Calories</div>
+                    <div class="metric-val">742 kcal</div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Start Workout CTA -->
+          <button class="btn-start-workout-cta" id="cta-start-workout">
+            Start Workout →
+          </button>
+
+          <!-- Quick Access 3-Grid -->
+          <div class="quick-access-title">Quick Access</div>
+          <div class="quick-access-grid">
+            <div class="quick-card" data-nav="stats">
+              <svg class="quick-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+              <div class="quick-card-label">Stats</div>
+            </div>
+
+            <div class="quick-card" data-nav="plan">
+              <svg class="quick-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <div class="quick-card-label">Plan</div>
+            </div>
+
+            <div class="quick-card" data-nav="library">
+              <svg class="quick-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              <div class="quick-card-label">Library</div>
+            </div>
+          </div>
+
+          <!-- OpenGym Integrated Tools -->
+          <div class="home-extra-tools">
+            <button class="tool-pill-btn" id="btn-open-plate-calc">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="3" x2="12" y2="9"/><line x1="12" y1="15" x2="12" y2="21"/></svg>
+              Plate Calc
+            </button>
+            <button class="tool-pill-btn" data-nav="history">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              History Log
+            </button>
+            <button class="tool-pill-btn" data-nav="settings">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              Settings
+            </button>
+          </div>
+
+        </div>
+
+        <!-- ====================================================================
+             2. WORKOUT SCREEN (CLEAN CARD HERO LAYOUT)
+             ==================================================================== -->
+        <div class="screen-view" id="view-workout">
+          
+          <div class="workout-header-bar">
+            <button class="nav-icon-btn" data-nav="home">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <div class="workout-routine-title" id="workout-session-label">Lower Body</div>
+            <div class="workout-eye-badge"></div>
+          </div>
+
+          <!-- Upper Art Stage with Left Vertical Kanji Margin -->
+          <div class="workout-stage-row">
+            <div class="workout-kanji-pillar">領域展開</div>
+            
+            <div class="workout-art-stage" id="workout-dynamic-stage" style="background-image: url('assets/toji/ink-squat.webp');">
+              <div class="stage-exercise-info">
+                <div class="stage-exercise-name" id="stage-ex-name">Barbell<br>Back Squat</div>
+                <div class="stage-exercise-meta" id="stage-ex-meta">4 sets • 8-10 reps</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Muscle Group Flagging / Exercise Switcher Ribbon -->
+          <div class="exercise-switcher-ribbon">
+            <div class="ex-switch-pill active" data-ex-key="squat">Squat (Legs)</div>
+            <div class="ex-switch-pill" data-ex-key="bench">Bench (Chest)</div>
+            <div class="ex-switch-pill" data-ex-key="deadlift">Deadlift (Back)</div>
+            <div class="ex-switch-pill" data-ex-key="pulldown">Pull-Up (Lats)</div>
+            <div class="ex-switch-pill" data-ex-key="arms">Curls (Arms)</div>
+            <div class="ex-switch-pill" data-ex-key="shoulders">Press (Shoulders)</div>
+            <div class="ex-switch-pill" data-ex-key="core">Hanging (Core)</div>
+          </div>
+
+          <!-- Sets Table (Clean & Borderless) -->
+          <div class="sets-minimal-table">
+            <div class="sets-table-head">
+              <span>Set</span>
+              <span>Weight</span>
+              <span>Reps</span>
+              <span style="text-align: center;">Status</span>
+            </div>
+
+            <div class="set-table-row">
+              <span class="set-num">1</span>
+              <span class="set-wt">60 kg</span>
+              <span class="set-rep">10/10</span>
+              <button class="set-status-toggle checked" data-set-index="1">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              </button>
+            </div>
+
+            <div class="set-table-row">
+              <span class="set-num">2</span>
+              <span class="set-wt">70 kg</span>
+              <span class="set-rep">10/10</span>
+              <button class="set-status-toggle checked" data-set-index="2">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              </button>
+            </div>
+
+            <div class="set-table-row">
+              <span class="set-num">3</span>
+              <span class="set-wt">70 kg</span>
+              <span class="set-rep">10/10</span>
+              <button class="set-status-toggle checked" data-set-index="3">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              </button>
+            </div>
+
+            <div class="set-table-row active-row">
+              <span class="set-num">4</span>
+              <span class="set-wt">70 kg</span>
+              <span class="set-rep">8/10</span>
+              <button class="set-status-toggle pending" data-set-index="4">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/></svg>
+              </button>
+            </div>
+
+            <button class="btn-add-set-row" id="btn-add-set-action">+ Add Set</button>
+          </div>
+
+          <!-- Gojo Coaching Speech Bubble Card (Exact Mockup Match) -->
+          <div class="gojo-coach-card">
+            <div class="gojo-speech-bubble" id="gojo-quote-text">
+              "Keep your core tight, like a sorcerer's barrier."
+            </div>
+            <div class="gojo-mascot-sticker" id="btn-gojo-tap">
+              <img src="assets/toji/mascot-1.webp" alt="Gojo Coach">
+            </div>
+          </div>
+
+          <!-- Finish Session Distressed Button -->
+          <button class="btn-finish-distressed" id="btn-finish-session-action">
+            Finish Session
+          </button>
+
+          <!-- Action Triggers -->
+          <div class="workout-action-triggers">
+            <button class="action-trigger-btn" id="btn-trigger-domain-rest">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Domain Rest
+            </button>
+            <button class="action-trigger-btn special" id="btn-trigger-black-flash">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              Strike Black Flash
+            </button>
+          </div>
+
+        </div>
+
+        <!-- ====================================================================
+             3. STATS SCREEN (MOCKUP SCREEN 3)
+             ==================================================================== -->
+        <div class="screen-view" id="view-stats">
+          
+          <div class="stats-header-bar">
+            <button class="nav-icon-btn" data-nav="home">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <div class="workout-routine-title">Your Stats</div>
+            <button class="nav-icon-btn" id="btn-share-stats">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            </button>
+          </div>
+
+          <!-- Time Range Pills -->
+          <div class="stats-time-pills">
+            <div class="time-pill">7D</div>
+            <div class="time-pill active">30D</div>
+            <div class="time-pill">90D</div>
+            <div class="time-pill">1Y</div>
+          </div>
+
+          <!-- Strength Progression Chart -->
+          <div class="progression-chart-card">
+            <div class="chart-card-title">Strength Progression</div>
+            <div class="chart-svg-box">
+              <svg viewBox="0 0 350 140" width="100%" height="100%">
+                <line x1="30" y1="20" x2="340" y2="20" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+                <line x1="30" y1="60" x2="340" y2="60" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+                <line x1="30" y1="100" x2="340" y2="100" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+                
+                <text x="5" y="24" fill="#8E8D96" font-size="11" font-weight="600">80</text>
+                <text x="5" y="64" fill="#8E8D96" font-size="11" font-weight="600">60</text>
+                <text x="5" y="104" fill="#8E8D96" font-size="11" font-weight="600">40</text>
+
+                <text x="45" y="132" fill="#8E8D96" font-size="11" font-weight="600">W1</text>
+                <text x="135" y="132" fill="#8E8D96" font-size="11" font-weight="600">W2</text>
+                <text x="225" y="132" fill="#8E8D96" font-size="11" font-weight="600">W3</text>
+                <text x="315" y="132" fill="#8E8D96" font-size="11" font-weight="600">W4</text>
+
+                <!-- Crimson Curved Path -->
+                <path d="M 50 102 Q 140 85 230 65 T 320 35" fill="none" stroke="#C1121F" stroke-width="3" stroke-linecap="round"/>
+                
+                <!-- Glowing Peak Node -->
+                <circle cx="320" cy="35" r="5" fill="#E5312D" stroke="#FFFFFF" stroke-width="1.5" filter="drop-shadow(0 0 6px #C1121F)"/>
+                
+                <!-- 72.5 kg Badge -->
+                <rect x="280" y="5" width="58" height="22" rx="6" fill="#1E1F27" stroke="rgba(255,255,255,0.15)"/>
+                <text x="309" y="20" fill="#EDE9E0" font-size="11" font-weight="800" text-anchor="middle">72.5 kg</text>
+              </svg>
+            </div>
+          </div>
+
+          <!-- 3 Summary Stat Tiles -->
+          <div class="stats-summary-grid">
+            <div class="stat-tile">
+              <svg class="stat-tile-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 5v14M18 5v14M2 9v6M22 9v6M6 12h12"/></svg>
+              <div class="stat-tile-title">Total Workouts</div>
+              <div class="stat-tile-val">12</div>
+            </div>
+
+            <div class="stat-tile">
+              <svg class="stat-tile-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="4" x2="6" y2="20"/><line x1="18" y1="4" x2="18" y2="20"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+              <div class="stat-tile-title">Total Volume</div>
+              <div class="stat-tile-val">8.4K <span style="font-size: 11px; color: var(--text-muted);">kg</span></div>
+            </div>
+
+            <div class="stat-tile">
+              <svg class="stat-tile-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+              <div class="stat-tile-title">Calories Burned</div>
+              <div class="stat-tile-val">18.6K <span style="font-size: 11px; color: var(--text-muted);">kcal</span></div>
+            </div>
+          </div>
+
+          <!-- Muscle Recovery Card (87% Meter) -->
+          <div class="recovery-card">
+            <div class="chart-card-title">Muscle Recovery</div>
+            <div class="recovery-body">
+              
+              <div class="progress-ring-box">
+                <svg viewBox="0 0 76 76">
+                  <circle class="progress-ring-bg" cx="38" cy="38" r="32"/>
+                  <circle class="progress-ring-fill" cx="38" cy="38" r="32" style="stroke: var(--jade); stroke-dashoffset: 26;"/>
+                </svg>
+                <div class="progress-ring-text">87%</div>
+              </div>
+
+              <div class="recovery-legend">
+                <div class="legend-item">
+                  <div class="legend-dot" style="background: var(--jade);"></div>
+                  <span>Recovered (Chest, Legs)</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-dot" style="background: #EAB308;"></div>
+                  <span>Recovering (Back, Shoulders)</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-dot" style="background: var(--fatigued);"></div>
+                  <span>Fatigued (Arms)</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Manga Peek Banner -->
+          <div class="manga-peek-banner">
+            <div class="peek-banner-quote">"...I'M JUST GETTING STARTED."</div>
+          </div>
+
+        </div>
+
+        <!-- ====================================================================
+             4. WEEKLY PLAN SCREEN (MOCKUP SCREEN 4)
+             ==================================================================== -->
+        <div class="screen-view" id="view-plan">
+          
+          <div class="stats-header-bar">
+            <button class="nav-icon-btn" data-nav="home">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <div class="workout-routine-title">Weekly Plan</div>
+            <div style="width: 36px;"></div>
+          </div>
+
+          <!-- Week Pager -->
+          <div class="plan-week-pager">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="cursor: pointer;"><polyline points="15 18 9 12 15 6"/></svg>
+            <span>Sep 22 - Sep 28</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="cursor: pointer;"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+
+          <!-- 7-Day Plan Cards -->
+          <div class="plan-days-list">
+            
+            <div class="day-row-card">
+              <div class="day-info-left">
+                <div class="day-name">Mon</div>
+                <div class="day-date">Sep 22</div>
+              </div>
+              <div class="day-split-center">
+                <div class="split-title">Push</div>
+                <div class="split-targets">(Chest • Shoulders • Triceps)</div>
+              </div>
+              <div class="badge-done">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+            </div>
+
+            <div class="day-row-card">
+              <div class="day-info-left">
+                <div class="day-name">Tue</div>
+                <div class="day-date">Sep 23</div>
+              </div>
+              <div class="day-split-center">
+                <div class="split-title">Pull</div>
+                <div class="split-targets">(Back • Biceps)</div>
+              </div>
+              <div class="badge-done">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+            </div>
+
+            <!-- Active Today Card -->
+            <div class="day-row-card active-today" data-nav="workout" style="cursor: pointer;">
+              <div class="day-info-left">
+                <div class="day-name" style="color: var(--crimson-bright);">Wed</div>
+                <div class="day-date">Sep 24</div>
+              </div>
+              <div class="day-split-center">
+                <div class="split-title" style="color: var(--crimson-bright);">Legs</div>
+                <div class="split-targets">(Quads • Hamstrings)</div>
+              </div>
+              <div class="badge-play">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              </div>
+            </div>
+
+            <div class="day-row-card">
+              <div class="day-info-left">
+                <div class="day-name">Thu</div>
+                <div class="day-date">Sep 25</div>
+              </div>
+              <div class="day-split-center">
+                <div class="split-title">Rest</div>
+                <div class="split-targets">(Recovery Day)</div>
+              </div>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5C5D66" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+
+            <div class="day-row-card">
+              <div class="day-info-left">
+                <div class="day-name">Fri</div>
+                <div class="day-date">Sep 26</div>
+              </div>
+              <div class="day-split-center">
+                <div class="split-title">Upper</div>
+                <div class="split-targets">(Chest • Back • Arms)</div>
+              </div>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5C5D66" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+
+            <div class="day-row-card">
+              <div class="day-info-left">
+                <div class="day-name">Sat</div>
+                <div class="day-date">Sep 27</div>
+              </div>
+              <div class="day-split-center">
+                <div class="split-title">Lower</div>
+                <div class="split-targets">(Quads • Hamstrings)</div>
+              </div>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5C5D66" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+
+            <div class="day-row-card">
+              <div class="day-info-left">
+                <div class="day-name">Sun</div>
+                <div class="day-date">Sep 28</div>
+              </div>
+              <div class="day-split-center">
+                <div class="split-title">Rest</div>
+                <div class="split-targets">(Recovery Day)</div>
+              </div>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5C5D66" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+
+          </div>
+
+          <!-- Gojo Coaching Card at Bottom -->
+          <div class="gojo-coach-card">
+            <div class="gojo-speech-bubble">
+              "A real jujutsu sorcerer never skips training."<br>
+              <span style="font-size: 11px; color: var(--text-muted);">— Gojo Satoru</span>
+            </div>
+            <div class="gojo-mascot-sticker">
+              <img src="assets/toji/mascot-2.webp" alt="Gojo Sensei">
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ====================================================================
+             5. EXERCISE LIBRARY (MOCKUP SCREEN 5)
+             ==================================================================== -->
+        <div class="screen-view" id="view-library">
+          
+          <div class="stats-header-bar">
+            <button class="nav-icon-btn" data-nav="home">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <div class="workout-routine-title">Exercise Library</div>
+            <div style="width: 36px;"></div>
+          </div>
+
+          <!-- Search Input -->
+          <div class="library-search-box">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="library-search-input" placeholder="Search exercises...">
+          </div>
+
+          <!-- Muscle Category Filter Pills -->
+          <div class="library-category-pills">
+            <div class="cat-pill active" data-cat="all">All</div>
+            <div class="cat-pill" data-cat="chest">Chest</div>
+            <div class="cat-pill" data-cat="back">Back</div>
+            <div class="cat-pill" data-cat="legs">Legs</div>
+            <div class="cat-pill" data-cat="arms">Arms</div>
+            <div class="cat-pill" data-cat="shoulders">Shoulders</div>
+            <div class="cat-pill" data-cat="core">Core</div>
+          </div>
+
+          <!-- 2-Column Grid with 8 Ink-Illustrated Exercises -->
+          <div class="exercise-2col-grid" id="library-exercises-grid">
+            
+            <div class="ex-grid-card" data-ex-key="pulldown" data-cat-type="back">
+              <div class="ex-grid-art" style="background-image: url('assets/toji/ink-pulldown.webp');"></div>
+              <div class="ex-grid-name">Pull-Up</div>
+              <div class="ex-grid-sub">Back • Bodyweight</div>
+            </div>
+
+            <div class="ex-grid-card" data-ex-key="squat" data-cat-type="legs">
+              <div class="ex-grid-art" style="background-image: url('assets/toji/ink-squat.webp');"></div>
+              <div class="ex-grid-name">Barbell Squat</div>
+              <div class="ex-grid-sub">Legs • Barbell</div>
+            </div>
+
+            <div class="ex-grid-card" data-ex-key="bench" data-cat-type="chest">
+              <div class="ex-grid-art" style="background-image: url('assets/toji/ink-bench.webp');"></div>
+              <div class="ex-grid-name">Incline DB Press</div>
+              <div class="ex-grid-sub">Chest • Dumbbell</div>
+            </div>
+
+            <div class="ex-grid-card" data-ex-key="deadlift" data-cat-type="legs">
+              <div class="ex-grid-art" style="background-image: url('assets/toji/ink-deadlift.webp');"></div>
+              <div class="ex-grid-name">Romanian Deadlift</div>
+              <div class="ex-grid-sub">Hamstrings • Barbell</div>
+            </div>
+
+            <div class="ex-grid-card" data-ex-key="deadlift" data-cat-type="back">
+              <div class="ex-grid-art" style="background-image: url('assets/toji/ink-deadlift.webp');"></div>
+              <div class="ex-grid-name">Dumbbell Row</div>
+              <div class="ex-grid-sub">Back • Dumbbell</div>
+            </div>
+
+            <div class="ex-grid-card" data-ex-key="shoulders" data-cat-type="shoulders">
+              <div class="ex-grid-art" style="background-image: url('assets/toji/ink-shoulders.webp');"></div>
+              <div class="ex-grid-name">Overhead Press</div>
+              <div class="ex-grid-sub">Shoulders • Barbell</div>
+            </div>
+
+            <div class="ex-grid-card" data-ex-key="arms" data-cat-type="arms">
+              <div class="ex-grid-art" style="background-image: url('assets/toji/ink-arms.webp');"></div>
+              <div class="ex-grid-name">Bicep DB Curls</div>
+              <div class="ex-grid-sub">Arms • Dumbbell</div>
+            </div>
+
+            <div class="ex-grid-card" data-ex-key="core" data-cat-type="core">
+              <div class="ex-grid-art" style="background-image: url('assets/toji/ink-core.webp');"></div>
+              <div class="ex-grid-name">Hanging Leg Raise</div>
+              <div class="ex-grid-sub">Core • Bodyweight</div>
+            </div>
+
+          </div>
+
+          <!-- Bottom Infinity Kanji Banner -->
+          <div class="infinity-banner">
+            <div class="infinity-banner-text">NO LIMITS.</div>
+            <div class="infinity-banner-stamp">無限</div>
+          </div>
+
+        </div>
+
+        <!-- ====================================================================
+             6. WORKOUT HISTORY LOG (OPEN GYM REDESIGNED)
+             ==================================================================== -->
+        <div class="screen-view" id="view-history">
+          
+          <div class="stats-header-bar">
+            <button class="nav-icon-btn" data-nav="home">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <div class="workout-routine-title">Workout History</div>
+            <div style="width: 36px;"></div>
+          </div>
+
+          <div class="history-card-item">
+            <div class="history-card-header">
+              <div>
+                <div class="history-card-title">Lower Body Dominance</div>
+                <div class="history-card-date">Today • 17:15</div>
+              </div>
+              <div class="history-pr-tag">SQUAT PR</div>
+            </div>
+            <div class="history-stats-row">
+              <span><strong>4</strong> exercises</span>
+              <span><strong>16</strong> sets</span>
+              <span><strong>9,200 kg</strong> vol</span>
+              <span><strong>52m</strong> dur</span>
+            </div>
+          </div>
+
+          <div class="history-card-item">
+            <div class="history-card-header">
+              <div>
+                <div class="history-card-title">Pull — Cursed Wings</div>
+                <div class="history-card-date">Yesterday • 18:30</div>
+              </div>
+            </div>
+            <div class="history-stats-row">
+              <span><strong>5</strong> exercises</span>
+              <span><strong>18</strong> sets</span>
+              <span><strong>8,150 kg</strong> vol</span>
+              <span><strong>58m</strong> dur</span>
+            </div>
+          </div>
+
+          <div class="history-card-item">
+            <div class="history-card-header">
+              <div>
+                <div class="history-card-title">Push — Heavenly Restriction</div>
+                <div class="history-card-date">Sep 20 • 09:15</div>
+              </div>
+              <div class="history-pr-tag">BENCH PR</div>
+            </div>
+            <div class="history-stats-row">
+              <span><strong>4</strong> exercises</span>
+              <span><strong>15</strong> sets</span>
+              <span><strong>7,150 kg</strong> vol</span>
+              <span><strong>49m</strong> dur</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ====================================================================
+             7. SETTINGS & HEAVENLY VOWS
+             ==================================================================== -->
+        <div class="screen-view" id="view-settings">
+          
+          <div class="stats-header-bar">
+            <button class="nav-icon-btn" data-nav="home">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <div class="workout-routine-title">Settings & Vows</div>
+            <div style="width: 36px;"></div>
+          </div>
+
+          <div class="settings-section-title">Aesthetics & Hardware</div>
+          <div class="settings-list-card">
+            <div class="settings-row">
+              <span>Display Refresh (Redmi 13C 90Hz)</span>
+              <span style="font-weight: 700; color: var(--crimson-bright);">90 FPS Active</span>
+            </div>
+            <div class="settings-row">
+              <span>Sound Synthesizer SFX</span>
+              <div class="toggle-switch on" id="toggle-sfx">
+                <div class="toggle-switch-thumb"></div>
+              </div>
+            </div>
+            <div class="settings-row">
+              <span>Tactile Haptic Feedback</span>
+              <div class="toggle-switch on" id="toggle-haptic">
+                <div class="toggle-switch-thumb"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section-title">Training Metrics</div>
+          <div class="settings-list-card">
+            <div class="settings-row">
+              <span>Measurement Units</span>
+              <span style="font-weight: 700; color: var(--parchment);">Metric (kg / km)</span>
+            </div>
+            <div class="settings-row">
+              <span>Olympic Barbell Weight</span>
+              <span style="font-weight: 700; color: var(--parchment);">20 kg</span>
+            </div>
+            <div class="settings-row">
+              <span>Domain Rest Duration</span>
+              <span style="font-weight: 700; color: var(--parchment);">90 Seconds</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ====================================================================
+           BOTTOM 5-TAB NAVIGATION (MOCKUP ACCURATE)
+           ==================================================================== -->
+      <nav class="nav-tabbar">
+        <button class="nav-tab-btn active" data-tab-nav="home">
+          <svg class="nav-tab-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <span class="nav-tab-label">Home</span>
+        </button>
+
+        <button class="nav-tab-btn" data-tab-nav="workout">
+          <svg class="nav-tab-icon" viewBox="0 0 24 24"><path d="M6 5v14M18 5v14M2 9v6M22 9v6M6 12h12"/></svg>
+          <span class="nav-tab-label">Workout</span>
+        </button>
+
+        <button class="nav-tab-btn" data-tab-nav="stats">
+          <svg class="nav-tab-icon" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          <span class="nav-tab-label">Stats</span>
+        </button>
+
+        <button class="nav-tab-btn" data-tab-nav="plan">
+          <svg class="nav-tab-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span class="nav-tab-label">Plan</span>
+        </button>
+
+        <button class="nav-tab-btn" data-tab-nav="library">
+          <svg class="nav-tab-icon" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          <span class="nav-tab-label">Library</span>
+        </button>
+      </nav>
+
+      <!-- ====================================================================
+           MODAL 1: PLATE CALCULATOR SHEET (OPEN GYM INTEGRATION)
+           ==================================================================== -->
+      <div class="modal-bottom-sheet" id="modal-plate-sheet">
+        <div class="sheet-card-container">
+          <div class="sheet-grab-bar"></div>
+          <div class="sheet-title-row">
+            <div class="sheet-title-text">Plate Calculator (Olympic 20kg Bar)</div>
+            <button class="sheet-close-btn" id="btn-close-plate-sheet">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+
+          <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">Target Barbell Weight: <strong>100 kg</strong> (40 kg per side)</div>
+
+          <div class="plates-display-bar">
+            <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-right: 6px;">BAR |</div>
+            <div class="plate-slice plate-25kg">25</div>
+            <div class="plate-slice plate-10kg">10</div>
+            <div class="plate-slice plate-5kg">5</div>
+            <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-left: auto;">| COLLAR</div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 14px;">
+            <button class="tool-pill-btn" style="border-color: var(--crimson);">60 kg</button>
+            <button class="tool-pill-btn" style="border-color: var(--crimson);">80 kg</button>
+            <button class="tool-pill-btn" style="border-color: var(--crimson); background: var(--surface-3);">100 kg</button>
+            <button class="tool-pill-btn" style="border-color: var(--crimson);">140 kg</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====================================================================
+           MODAL 2: DOMAIN EXPANSION REST TIMER
+           ==================================================================== -->
+      <div class="domain-rest-modal" id="modal-domain-timer">
+        <div class="domain-backdrop-img"></div>
+        <div class="domain-ring-spinner"></div>
+        
+        <div class="domain-center-info">
+          <div class="domain-timer-clock" id="domain-countdown-display">01:30</div>
+          <div class="domain-tag">DOMAIN REST FOCUS</div>
+        </div>
+
+        <div class="domain-btn-bar">
+          <button class="domain-action-btn" id="btn-timer-sub">-15s</button>
+          <button class="domain-action-btn" id="btn-timer-add">+30s</button>
+          <button class="domain-action-btn resume" id="btn-timer-dismiss">RESUME</button>
+        </div>
+      </div>
+
+      <!-- ====================================================================
+           MODAL 3: BLACK FLASH PR CELEBRATION
+           ==================================================================== -->
+      <div class="black-flash-overlay" id="modal-black-flash">
+        <div class="bf-frame-bg"></div>
+        <div class="bf-logo-art"></div>
+        
+        <div class="bf-pr-number">180 KG</div>
+        <div class="bf-pr-label">NEW LIFETIME RECORD • SQUAT</div>
+
+        <button class="bf-claim-btn" id="btn-claim-black-flash">CLAIM ASCENSION</button>
+      </div>
+
+      <!-- ====================================================================
+           MODAL 4: EXERCISE DETAIL CODEX SHEET
+           ==================================================================== -->
+      <div class="modal-bottom-sheet" id="modal-exercise-detail">
+        <div class="sheet-card-container">
+          <div class="sheet-grab-bar"></div>
+          <div class="sheet-title-row">
+            <div class="sheet-title-text" id="codex-ex-title">Barbell Back Squat</div>
+            <button class="sheet-close-btn" id="btn-close-codex">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+
+          <div style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 14px;" id="codex-ex-desc">
+            The foundation of heavenly physical strength. Drive feet into the earth, keep knees tracking with toes, brace abs like a sorcerer's domain, and ascend with explosive force.
+          </div>
+
+          <div class="settings-list-card" style="margin-bottom: 18px;">
+            <div class="settings-row">
+              <span>Primary Muscles</span>
+              <span style="font-weight: 700; color: var(--crimson-bright);" id="codex-ex-primary">Quadriceps, Glutes</span>
+            </div>
+            <div class="settings-row">
+              <span>Equipment</span>
+              <span style="font-weight: 700; color: var(--parchment);">Olympic Barbell</span>
+            </div>
+            <div class="settings-row">
+              <span>Lifetime Record</span>
+              <span style="font-weight: 800; color: var(--jade);" id="codex-ex-pr">180 kg (PR)</span>
+            </div>
+          </div>
+
+          <button class="btn-start-workout-cta" id="btn-load-into-session">
+            Load into Active Session
+          </button>
+        </div>
+      </div>
+
+      <!-- ====================================================================
+           MODAL 5: EXERCISE SWITCHER SHEET (ACCESSED VIA EXERCISE TITLE)
+           ==================================================================== -->
+      <div class="modal-bottom-sheet" id="modal-switch-exercise">
+        <div class="sheet-card-container">
+          <div class="sheet-grab-bar"></div>
+          <div class="sheet-title-row">
+            <div class="sheet-title-text">Select Exercise & Muscle Art</div>
+            <button class="sheet-close-btn" id="btn-close-switcher">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+
+          <div class="settings-list-card" style="margin-bottom: 8px;">
+            <div class="settings-row ex-picker-item" data-pick-ex="squat" style="cursor: pointer;">
+              <div>
+                <div style="font-weight: 800; color: var(--parchment);">Barbell Back Squat</div>
+                <div style="font-size: 11px; color: var(--text-muted);">Legs • Quadriceps, Glutes</div>
+              </div>
+              <span style="font-size: 11px; font-weight: 800; color: var(--crimson-bright); padding: 4px 8px; border: 1px solid var(--crimson); border-radius: 6px;">SQUAT ART</span>
+            </div>
+
+            <div class="settings-row ex-picker-item" data-pick-ex="bench" style="cursor: pointer;">
+              <div>
+                <div style="font-weight: 800; color: var(--parchment);">Incline Barbell Bench</div>
+                <div style="font-size: 11px; color: var(--text-muted);">Chest • Pectoralis, Triceps</div>
+              </div>
+              <span style="font-size: 11px; font-weight: 800; color: var(--crimson-bright); padding: 4px 8px; border: 1px solid var(--crimson); border-radius: 6px;">BENCH ART</span>
+            </div>
+
+            <div class="settings-row ex-picker-item" data-pick-ex="deadlift" style="cursor: pointer;">
+              <div>
+                <div style="font-weight: 800; color: var(--parchment);">Conventional Deadlift</div>
+                <div style="font-size: 11px; color: var(--text-muted);">Back • Lats, Spinal Erector</div>
+              </div>
+              <span style="font-size: 11px; font-weight: 800; color: var(--crimson-bright); padding: 4px 8px; border: 1px solid var(--crimson); border-radius: 6px;">DEADLIFT ART</span>
+            </div>
+
+            <div class="settings-row ex-picker-item" data-pick-ex="pulldown" style="cursor: pointer;">
+              <div>
+                <div style="font-weight: 800; color: var(--parchment);">Weighted Pull-Up</div>
+                <div style="font-size: 11px; color: var(--text-muted);">Lats • Upper Back, Biceps</div>
+              </div>
+              <span style="font-size: 11px; font-weight: 800; color: var(--crimson-bright); padding: 4px 8px; border: 1px solid var(--crimson); border-radius: 6px;">PULL-UP ART</span>
+            </div>
+
+            <div class="settings-row ex-picker-item" data-pick-ex="arms" style="cursor: pointer;">
+              <div>
+                <div style="font-weight: 800; color: var(--parchment);">Heavy Bicep Curls</div>
+                <div style="font-size: 11px; color: var(--text-muted);">Arms • Biceps Brachii</div>
+              </div>
+              <span style="font-size: 11px; font-weight: 800; color: var(--crimson-bright); padding: 4px 8px; border: 1px solid var(--crimson); border-radius: 6px;">ARMS ART</span>
+            </div>
+
+            <div class="settings-row ex-picker-item" data-pick-ex="shoulders" style="cursor: pointer;">
+              <div>
+                <div style="font-weight: 800; color: var(--parchment);">Overhead Military Press</div>
+                <div style="font-size: 11px; color: var(--text-muted);">Shoulders • Deltoids, Traps</div>
+              </div>
+              <span style="font-size: 11px; font-weight: 800; color: var(--crimson-bright); padding: 4px 8px; border: 1px solid var(--crimson); border-radius: 6px;">OHP ART</span>
+            </div>
+
+            <div class="settings-row ex-picker-item" data-pick-ex="core" style="cursor: pointer;">
+              <div>
+                <div style="font-weight: 800; color: var(--parchment);">Hanging Leg Raise</div>
+                <div style="font-size: 11px; color: var(--text-muted);">Core • Rectus Abdominis</div>
+              </div>
+              <span style="font-size: 11px; font-weight: 800; color: var(--crimson-bright); padding: 4px 8px; border: 1px solid var(--crimson); border-radius: 6px;">CORE ART</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- INTERACTIVE APPLICATION LOGIC & AUDIO SYNTHESIS -->
+  <script>
+    /* ==========================================================================
+       1. EXERCISE DATABASE & MUSCLE GROUP ART MAPPING
+       ========================================================================== */
+    const EXERCISE_REGISTRY = {
+      squat: {
+        name: 'Barbell<br>Back Squat',
+        meta: '4 sets • 8-10 reps',
+        art: 'assets/toji/ink-squat.webp',
+        category: 'legs',
+        quote: '"Keep your core tight, like a sorcerer\'s barrier."',
+        author: 'Gojo Satoru',
+        mascot: 'assets/toji/mascot-1.webp',
+        primary: 'Quadriceps, Glutes',
+        pr: '180 kg',
+        desc: 'Drive feet into the ground, keep chest upright, brace abdominal wall, and conquer gravity with pure physical force.'
+      },
+      bench: {
+        name: 'Incline Barbell<br>Bench Press',
+        meta: '4 sets • 8-10 reps',
+        art: 'assets/toji/ink-bench.webp',
+        category: 'chest',
+        quote: '"No cursed energy can match pure physical chest drive."',
+        author: 'Toji Fushiguro',
+        mascot: 'assets/toji/mascot-2.webp',
+        primary: 'Clavicular Pectoralis, Anterior Deltoid',
+        pr: '130 kg',
+        desc: 'Retract scapulae, plant heels firmly, arc bar cleanly over upper chest, and press with decisive intent.'
+      },
+      deadlift: {
+        name: 'Conventional<br>Deadlift',
+        meta: '3 sets • 5-6 reps',
+        art: 'assets/toji/ink-deadlift.webp',
+        category: 'back',
+        quote: '"Build a back wide enough to carry the entire Zen\'in clan\'s regret."',
+        author: 'Toji Fushiguro',
+        mascot: 'assets/toji/mascot-3.webp',
+        primary: 'Erector Spinae, Hamstrings, Lats',
+        pr: '220 kg',
+        desc: 'Lock in lats, pull the slack from the bar, push the world away through your midfoot, and lockout with iron glutes.'
+      },
+      pulldown: {
+        name: 'Weighted<br>Pull-Up',
+        meta: '4 sets • 6-8 reps',
+        art: 'assets/toji/ink-pulldown.webp',
+        category: 'back',
+        quote: '"Engage the lats. Maximum output without hesitation."',
+        author: 'Kento Nanami',
+        mascot: 'assets/toji/mascot-1.webp',
+        primary: 'Latissimus Dorsi, Biceps Brachii',
+        pr: '+45 kg',
+        desc: 'Depress shoulders down and back, pull elbows into back pockets, chin clear over the bar with zero kipping.'
+      },
+      arms: {
+        name: 'Heavy Dumbbell<br>Bicep Curls',
+        meta: '4 sets • 10-12 reps',
+        art: 'assets/toji/ink-arms.webp',
+        category: 'arms',
+        quote: '"Pump until the cursed spirit within screams."',
+        author: 'Aoi Todo',
+        mascot: 'assets/toji/mascot-2.webp',
+        primary: 'Biceps Brachii, Brachialis',
+        pr: '32 kg DBs',
+        desc: 'Pin elbows to ribs, supinate wrist at peak contraction, control the eccentric descent to ignite muscle fibers.'
+      },
+      shoulders: {
+        name: 'Standing Overhead<br>Military Press',
+        meta: '4 sets • 6-8 reps',
+        art: 'assets/toji/ink-shoulders.webp',
+        category: 'shoulders',
+        quote: '"Boulder shoulders to bear the weight of infinity."',
+        author: 'Gojo Satoru',
+        mascot: 'assets/toji/mascot-1.webp',
+        primary: 'Anterior & Lateral Deltoids, Trapezius',
+        pr: '95 kg',
+        desc: 'Squeeze glutes and abs to lock the torso in stone, push the bar in a straight vertical path directly overhead.'
+      },
+      core: {
+        name: 'Hanging Straight<br>Leg Raise',
+        meta: '4 sets • 12-15 reps',
+        art: 'assets/toji/ink-core.webp',
+        category: 'core',
+        quote: '"Brace hard. An iron core deflects all incoming curses."',
+        author: 'Toji Fushiguro',
+        mascot: 'assets/toji/mascot-3.webp',
+        primary: 'Rectus Abdominis, Iliopsoas',
+        pr: '+15 kg',
+        desc: 'Hang dead-still, curl pelvis forward and bring toes to eye-level with strict abdominal flexion.'
+      }
+    };
+
+    let activeExKey = 'squat';
+
+    /* ==========================================================================
+       2. WEB AUDIO SYNTHESIZER (NO EXTERNAL AUDIO FILES REQUIRED)
+       ========================================================================== */
+    let audioCtx = null;
+    let sfxEnabled = true;
+    let hapticEnabled = true;
+
+    function initAudio() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    function playAudio(type) {
+      if (!sfxEnabled) return;
+      try {
+        initAudio();
+        const now = audioCtx.currentTime;
+
+        if (type === 'tap') {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(600, now);
+          osc.frequency.exponentialRampToValueAtTime(320, now + 0.06);
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.06);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now);
+          osc.stop(now + 0.06);
+        } else if (type === 'stamp') {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(160, now);
+          osc.frequency.exponentialRampToValueAtTime(28, now + 0.16);
+          gain.gain.setValueAtTime(0.7, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now);
+          osc.stop(now + 0.18);
+        } else if (type === 'blackflash') {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(280, now);
+          osc.frequency.exponentialRampToValueAtTime(20, now + 0.65);
+          gain.gain.setValueAtTime(1.0, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.7);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now);
+          osc.stop(now + 0.7);
+        }
+      } catch (e) {}
+    }
+
+    function triggerHaptic(duration = 20) {
+      if (hapticEnabled && navigator.vibrate) {
+        try { navigator.vibrate(duration); } catch (e) {}
+      }
+    }
+
+    /* ==========================================================================
+       3. NAVIGATION & VIEW SWITCHER
+       ========================================================================== */
+    function navigateToView(viewId) {
+      // Update Tab Bar Active State
+      document.querySelectorAll('.nav-tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-tab-nav') === viewId);
+      });
+
+      // Update Screen View Containers
+      document.querySelectorAll('.screen-view').forEach(view => {
+        view.classList.remove('active');
+      });
+
+      const target = document.getElementById(`view-${viewId}`);
+      if (target) {
+        target.classList.add('active');
+        document.querySelector('.screen-scroller').scrollTop = 0;
+      }
+
+      playAudio('tap');
+      triggerHaptic(15);
+    }
+
+    // Bind Tab Bar
+    document.querySelectorAll('[data-tab-nav]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        navigateToView(btn.getAttribute('data-tab-nav'));
+      });
+    });
+
+    // Bind In-App Links
+    document.querySelectorAll('[data-nav]').forEach(el => {
+      el.addEventListener('click', () => {
+        navigateToView(el.getAttribute('data-nav'));
+      });
+    });
+
+    // Start Workout CTA
+    document.getElementById('cta-start-workout').addEventListener('click', () => {
+      navigateToView('workout');
+    });
+
+    /* ==========================================================================
+       4. DYNAMIC MUSCLE GROUP / EXERCISE SWITCHING IN WORKOUT SCREEN
+       ========================================================================== */
+    function switchExercise(exKey) {
+      const data = EXERCISE_REGISTRY[exKey];
+      if (!data) return;
+      activeExKey = exKey;
+
+      // Update pills
+      document.querySelectorAll('.ex-switch-pill').forEach(pill => {
+        pill.classList.toggle('active', pill.getAttribute('data-ex-key') === exKey);
+      });
+
+      // Update Artwork & Labels
+      const stage = document.getElementById('workout-dynamic-stage');
+      stage.style.backgroundImage = `url('${data.art}')`;
+      document.getElementById('stage-ex-name').innerHTML = data.name;
+      document.getElementById('stage-ex-meta').innerText = data.meta;
+
+      // Update Coaching Quote
+      document.getElementById('gojo-quote-text').innerText = data.quote;
+      document.querySelector('#btn-gojo-tap img').src = data.mascot;
+
+      playAudio('tap');
+      triggerHaptic(20);
+    }
+
+    // Open Exercise Switcher Sheet from Workout Title
+    const btnOpenSwitcher = document.getElementById('btn-open-ex-switcher');
+    if (btnOpenSwitcher) {
+      btnOpenSwitcher.addEventListener('click', () => {
+        document.getElementById('modal-switch-exercise').classList.add('active');
+        playAudio('tap');
+      });
+    }
+
+    const btnCloseSwitcher = document.getElementById('btn-close-switcher');
+    if (btnCloseSwitcher) {
+      btnCloseSwitcher.addEventListener('click', () => {
+        document.getElementById('modal-switch-exercise').classList.remove('active');
+        playAudio('tap');
+      });
+    }
+
+    document.querySelectorAll('.ex-picker-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const exKey = item.getAttribute('data-pick-ex');
+        switchExercise(exKey);
+        document.getElementById('modal-switch-exercise').classList.remove('active');
+      });
+    });
+
+    document.querySelectorAll('.ex-switch-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        switchExercise(pill.getAttribute('data-ex-key'));
+      });
+    });
+
+    /* ==========================================================================
+       5. INTERACTIVE SETS TABLE CHECKMARKS
+       ========================================================================== */
+    document.querySelectorAll('.set-status-toggle').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const isChecked = btn.classList.contains('checked');
+        const row = btn.closest('.set-table-row');
+
+        if (isChecked) {
+          btn.classList.remove('checked');
+          btn.classList.add('pending');
+          btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/></svg>`;
+          row.classList.add('active-row');
+          playAudio('tap');
+          triggerHaptic(15);
+        } else {
+          btn.classList.remove('pending');
+          btn.classList.add('checked');
+          btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>`;
+          row.classList.remove('active-row');
+          playAudio('stamp');
+          triggerHaptic(30);
+        }
+      });
+    });
+
+    // Add Set
+    let setCount = 4;
+    document.getElementById('btn-add-set-action').addEventListener('click', () => {
+      setCount++;
+      const table = document.querySelector('.sets-minimal-table');
+      const addBtn = document.getElementById('btn-add-set-action');
+      const newRow = document.createElement('div');
+      newRow.className = 'set-table-row active-row';
+      newRow.innerHTML = `
+        <span class="set-num">${setCount}</span>
+        <span class="set-wt">70 kg</span>
+        <span class="set-rep">8/10</span>
+        <button class="set-status-toggle pending" data-set-index="${setCount}">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/></svg>
+        </button>
+      `;
+
+      newRow.querySelector('.set-status-toggle').addEventListener('click', function() {
+        if (this.classList.contains('checked')) {
+          this.classList.remove('checked');
+          this.classList.add('pending');
+          this.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/></svg>`;
+          newRow.classList.add('active-row');
+          playAudio('tap');
+          triggerHaptic(15);
+        } else {
+          this.classList.remove('pending');
+          this.classList.add('checked');
+          this.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>`;
+          newRow.classList.remove('active-row');
+          playAudio('stamp');
+          triggerHaptic(30);
+        }
+      });
+
+      table.insertBefore(newRow, addBtn);
+      playAudio('tap');
+      triggerHaptic(20);
+    });
+
+    /* ==========================================================================
+       6. GOJO WISDOM COACHING CYCLER
+       ========================================================================== */
+    const EXTRA_QUOTES = [
+      '"Keep your core tight, like a sorcerer\'s barrier."',
+      '"Don\'t think. Just move. Pure physical instinct."',
+      '"Pain is merely cursed energy leaving the flesh."',
+      '"A real jujutsu sorcerer never skips leg day."',
+      '"Push beyond your domain limits. Maximum output!"'
+    ];
+    let quoteIndex = 0;
+    document.getElementById('btn-gojo-tap').addEventListener('click', () => {
+      quoteIndex = (quoteIndex + 1) % EXTRA_QUOTES.length;
+      document.getElementById('gojo-quote-text').innerText = EXTRA_QUOTES[quoteIndex];
+      playAudio('tap');
+      triggerHaptic(25);
+    });
+
+    /* ==========================================================================
+       7. FINISH SESSION & EASTER EGGS
+       ========================================================================== */
+    document.getElementById('btn-finish-session-action').addEventListener('click', () => {
+      playAudio('stamp');
+      triggerHaptic([40, 60, 40]);
+      alert('Session Complete! Total Volume: 9,200 kg logged to Toji Fitness Codex.');
+      navigateToView('stats');
+    });
+
+    // Domain Rest Timer
+    let domainSecs = 90;
+    let domainInterval = null;
+
+    function formatTime(s) {
+      const mins = Math.floor(s / 60);
+      const secs = s % 60;
+      return `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+
+    function openDomainTimer() {
+      domainSecs = 90;
+      document.getElementById('domain-countdown-display').innerText = formatTime(domainSecs);
+      document.getElementById('modal-domain-timer').classList.add('active');
+      playAudio('stamp');
+      triggerHaptic(40);
+
+      if (domainInterval) clearInterval(domainInterval);
+      domainInterval = setInterval(() => {
+        if (domainSecs > 0) {
+          domainSecs--;
+          document.getElementById('domain-countdown-display').innerText = formatTime(domainSecs);
+        } else {
+          clearInterval(domainInterval);
+        }
+      }, 1000);
+    }
+
+    function closeDomainTimer() {
+      if (domainInterval) clearInterval(domainInterval);
+      document.getElementById('modal-domain-timer').classList.remove('active');
+      playAudio('tap');
+    }
+
+    document.getElementById('btn-trigger-domain-rest').addEventListener('click', openDomainTimer);
+    document.getElementById('btn-timer-dismiss').addEventListener('click', closeDomainTimer);
+    document.getElementById('btn-timer-add').addEventListener('click', () => {
+      domainSecs += 30;
+      document.getElementById('domain-countdown-display').innerText = formatTime(domainSecs);
+      playAudio('tap');
+    });
+    document.getElementById('btn-timer-sub').addEventListener('click', () => {
+      domainSecs = Math.max(0, domainSecs - 15);
+      document.getElementById('domain-countdown-display').innerText = formatTime(domainSecs);
+      playAudio('tap');
+    });
+
+    // Black Flash Modal
+    document.getElementById('btn-trigger-black-flash').addEventListener('click', () => {
+      document.getElementById('modal-black-flash').classList.add('active');
+      playAudio('blackflash');
+      triggerHaptic([100, 50, 150]);
+    });
+
+    document.getElementById('btn-claim-black-flash').addEventListener('click', () => {
+      document.getElementById('modal-black-flash').classList.remove('active');
+      playAudio('tap');
+    });
+
+    // Plate Calculator Sheet
+    document.getElementById('btn-open-plate-calc').addEventListener('click', () => {
+      document.getElementById('modal-plate-sheet').classList.add('active');
+      playAudio('tap');
+    });
+
+    document.getElementById('btn-close-plate-sheet').addEventListener('click', () => {
+      document.getElementById('modal-plate-sheet').classList.remove('active');
+      playAudio('tap');
+    });
+
+    // Exercise Library Grid Item Click -> Codex Detail
+    document.querySelectorAll('.ex-grid-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const key = card.getAttribute('data-ex-key');
+        const data = EXERCISE_REGISTRY[key];
+        if (data) {
+          document.getElementById('codex-ex-title').innerHTML = data.name.replace('<br>', ' ');
+          document.getElementById('codex-ex-desc').innerText = data.desc;
+          document.getElementById('codex-ex-primary').innerText = data.primary;
+          document.getElementById('codex-ex-pr').innerText = data.pr;
+          document.getElementById('modal-exercise-detail').classList.add('active');
+          playAudio('tap');
+        }
+      });
+    });
+
+    document.getElementById('btn-close-codex').addEventListener('click', () => {
+      document.getElementById('modal-exercise-detail').classList.remove('active');
+      playAudio('tap');
+    });
+
+    document.getElementById('btn-load-into-session').addEventListener('click', () => {
+      document.getElementById('modal-exercise-detail').classList.remove('active');
+      switchExercise(activeExKey);
+      navigateToView('workout');
+    });
+
+    // Category Filter in Library
+    document.querySelectorAll('.cat-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        const cat = pill.getAttribute('data-cat');
+        document.querySelectorAll('.ex-grid-card').forEach(card => {
+          if (cat === 'all' || card.getAttribute('data-cat-type') === cat) {
+            card.style.display = 'flex';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+        playAudio('tap');
+      });
+    });
+
+    // Search Filter in Library
+    document.getElementById('library-search-input').addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase();
+      document.querySelectorAll('.ex-grid-card').forEach(card => {
+        const text = card.innerText.toLowerCase();
+        card.style.display = text.includes(q) ? 'flex' : 'none';
+      });
+    });
+
+    // Settings Toggles
+    document.getElementById('toggle-sfx').addEventListener('click', function() {
+      sfxEnabled = !sfxEnabled;
+      this.classList.toggle('on', sfxEnabled);
+      if (sfxEnabled) playAudio('tap');
+    });
+
+    document.getElementById('toggle-haptic').addEventListener('click', function() {
+      hapticEnabled = !hapticEnabled;
+      this.classList.toggle('on', hapticEnabled);
+      if (hapticEnabled) triggerHaptic(20);
+    });
+
+    document.getElementById('btn-avatar-settings').addEventListener('click', () => {
+      navigateToView('settings');
+    });
+  </script>
+</body>
+</html>

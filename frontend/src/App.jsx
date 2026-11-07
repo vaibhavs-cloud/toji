@@ -46,6 +46,8 @@ import Toast from './components/Toast.jsx'
 import SyncBanner from './components/SyncBanner.jsx'
 import RestTimer from './components/RestTimer.jsx'
 import TimerFlash from './components/TimerFlash.jsx'
+import BlackFlash from './components/BlackFlash.jsx'
+import DomainTimer from './components/DomainTimer.jsx'
 import { SeasonalLayer } from './components/Seasonal.jsx'
 import { WrappedLayer } from './components/WrappedEntry.jsx'
 import { openDeviceLinkRedeem } from './components/Passkeys.jsx'
@@ -162,6 +164,10 @@ function Shell() {
   // seasonal theme's colours stand in for it while that theme shows, and only when chosen
   // (Settings → Look & Home → Seasonal themes); the saved accent itself is never touched.
   const accent = seasonAccent(S) || accentValue(S)
+  const blackFlash = useUI(s => s.blackFlash)
+  const dismissBlackFlash = useUI(s => s.dismissBlackFlash)
+  const domainTimer = useUI(s => s.domainTimer)
+  const closeDomainTimer = useUI(s => s.closeDomainTimer)
   useEffect(() => { applyPrefs(S.theme, accent) }, [S.theme, accent])
   // 'system' needs to react live if the OS theme flips while the app is open, not just on
   // the next mount — a fixed 'dark'/'light' choice never re-fires this since matchMedia
@@ -384,6 +390,8 @@ function Shell() {
       <Modals />
       <Toast />
       <TimerFlash />
+      {blackFlash && <BlackFlash milestone={blackFlash.milestone} value={blackFlash.value} onDismiss={dismissBlackFlash} />}
+      {domainTimer && <DomainTimer initialSeconds={domainTimer.seconds} onFinish={closeDomainTimer} onDismiss={closeDomainTimer} />}
       {tour && authed && <Suspense fallback={null}><Tour /></Suspense>}
       {/* Seasonal decoration (lib/seasonal.js): nothing, and nothing loaded, out of season. Never
           over a running workout or the first-launch screens. */}

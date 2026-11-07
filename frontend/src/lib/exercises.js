@@ -54,6 +54,20 @@ for (const [id, to] of Object.entries(EXALIAS)) {
 // file, an import, the Coach's output), so the app goes on storing only exercise ids. An id
 // already in state is left alone: rewriting it would move history behind the user's back.
 export const canonicalExId = id => (typeof id === 'string' && Object.hasOwn(EXALIAS, id) && EXIDX[EXALIAS[id]] ? EXALIAS[id] : id)
+
+// Stable global ID: resolves alias drawing IDs and any profile exercise merges (S.exMerged)
+// to guarantee a consistent global identifier across sessions, plans, and history.
+export const globalExId = (id, S) => {
+  const canon = canonicalExId(id)
+  if (!S?.exMerged) return canon
+  let cur = canon
+  for (let i = 0; i < 16; i++) {
+    const into = S.exMerged[cur]?.into
+    if (!into || into === cur) break
+    cur = into
+  }
+  return cur
+}
 export const BODYPARTS = [...new Set(CATALOGUE.map(e => e.bp))].sort()
 
 // Equipment options present in a given list of exercises, most common first (issue #6).

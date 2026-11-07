@@ -14,6 +14,7 @@ const anthropic = (await import('../coach/core/adapters/anthropic.js')).default;
 const openai = (await import('../coach/core/adapters/openai.js')).default;
 const gemini = (await import('../coach/core/adapters/gemini.js')).default;
 const compatible = (await import('../coach/core/adapters/compatible.js')).default;
+const nvidia = (await import('../coach/core/adapters/nvidia.js')).default;
 const { attemptOnce } = await import('../coach/core/pipeline.js');
 const { HTTP_PROVIDERS, validateBaseUrl, validateHeaders, isPrivateHost, phoneMayCall } = await import('../coach/core/providers.js');
 const { modelSubstitute } = await import('../coach/core/adapters/http.js');
@@ -39,12 +40,23 @@ const env = { ANTHROPIC_API_KEY: 'sk-ant-1', OPENAI_API_KEY: 'sk-oa-1', GEMINI_A
 const cfgCompat = { provider: 'compatible', providerOptions: { compatible: { baseUrl: 'http://ollama.lan:11434/' } } };
 const ANSWER = '{"coach_contract":1,"nochange":true,"reading":"fine"}';
 
-test('the four HTTP adapters spawn nothing and need no runtime', () => {
-  for (const a of [anthropic, openai, gemini, compatible]) {
+test('the five HTTP adapters spawn nothing and need no runtime', () => {
+  for (const a of [anthropic, openai, gemini, compatible, nvidia]) {
     assert.equal(a.spawns, false, a.id);
     assert.equal(a.needsRuntime, false, a.id);
     assert.ok(HTTP_PROVIDERS[a.id], `${a.id} is described in core/providers.js`);
   }
+});
+
+test('NVIDIA NIM: chat completions at https://integrate.api.nvidia.com/v1/chat/completions with Bearer auth', async () => {
+  const f = fakeFetch([ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] })]);
+  const r = await nvidia.invoke({ cfg: {}, prompt: 'P', env: { NVIDIA_API_KEY: 'nvapi-test-key' }, model: null, fetch: f });
+  assert.equal(r.code, 0);
+  assert.equal(r.text, ANSWER);
+  const c = f.calls[0];
+  assert.equal(c.url, 'https://integrate.api.nvidia.com/v1/chat/completions');
+  assert.equal(c.headers['authorization'], 'Bearer nvapi-test-key');
+  assert.equal(c.body.model, 'meta/llama-3.1-70b-instruct');
 });
 
 test('Anthropic: /v1/messages with the key in a header, the shared system prompt, and the text joined back', async () => {

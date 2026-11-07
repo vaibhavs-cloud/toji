@@ -5,6 +5,7 @@ import { activeProfile, exAvailable } from '../lib/equipment.js'
 import { bestWeightFor } from '../lib/history.js'
 import { fmtNum, exCount } from '../lib/format.js'
 import { MUSCLES, MUSCLE_NAME, musclesOf } from '../lib/muscles.js'
+import { volumeDecay7d, undertrainedMuscles } from '../lib/recovery.js'
 import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import BodyMap from './BodyMap.jsx'
 import { Thumb } from './Media.jsx'
@@ -52,6 +53,11 @@ export default function MuscleExplorer({ onPick, onDetail, onPlan, pickIcon = 'p
   // filter narrows the muscle's list, the × while there is text.
   const narrowed = !!(q.trim() || bp || eqOn)
 
+  const recovery = useMemo(() => volumeDecay7d(S?.workouts || []), [S?.workouts])
+  const undertrainedList = useMemo(() => undertrainedMuscles(S?.workouts || []), [S?.workouts])
+  const undertrainedSlugs = useMemo(() => undertrainedList.map(u => u.slug), [undertrainedList])
+  const setsLoad = useMemo(() => Object.fromEntries(MUSCLES.map(m => [m, recovery[m]?.sets || 0])), [recovery])
+
   return <>
     {profile && <div className="small dim row" style={{ margin: '-4px 2px 10px', gap: 6, alignItems: 'center' }}>
       <Icon name="kettlebell" style={{ fontSize: 'var(--fs-footnote)' }} />
@@ -61,14 +67,81 @@ export default function MuscleExplorer({ onPick, onDetail, onPlan, pickIcon = 'p
       </button>
     </div>}
     <div className="card">
-      <BodyMap className="tappable" body={S.body} selected={selected} onMuscle={pick} />
+      <BodyMap className="tappable" body={S.body} load={setsLoad} warningMuscles={undertrainedSlugs} selected={selected} onMuscle={pick} />
       <div className="chips" style={{ marginTop: 10 }}>
-        {MUSCLES.map(m => <button key={m} className={'chip' + (selected === m ? ' on' : '')}
-          aria-pressed={selected === m} onClick={() => pick(m)}>
-          {t(MUSCLE_NAME[m])} <span className="dim">{counts[m]}</span>
-        </button>)}
+        {MUSCLES.map(m => {
+          const isUnder = recovery[m]?.undertrained
+          return (
+            <button key={m} className={'chip' + (selected === m ? ' on' : '') + (isUnder ? ' undertrained-chip' : '')}
+              aria-pressed={selected === m} onClick={() => pick(m)}>
+              {t(MUSCLE_NAME[m])} <span className="dim">{counts[m]}</span>
+              {isUnder && <span className="undertrained-dot" aria-hidden="true" style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: '#C1121F', marginInlineStart: 4 }} />}
+            </button>
+          )
+        })}
       </div>
     </div>
+
+    {undertrainedList.length > 0 && (
+      <div className="undertrained-banner" role="status" style={{
+        margin: '10px 0',
+        padding: '10px 12px',
+        background: '#17181C',
+        border: '1px solid #C1121F',
+        borderRadius: 8,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 6,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#C1121F', fontWeight: 600, fontSize: 'var(--fs-caption, 13px)' }}>
+          <Icon name="warning" />
+          <span>{t('{0} undertrained muscle groups (< 4 sets in 7d)', undertrainedList.length)}</span>
+        </div>
+        <div className="chips" style={{ margin: 0, gap: 4 }}>
+          {undertrainedList.slice(0, 6).map(u => (
+            <button key={u.slug} type="button" className={'chip' + (selected === u.slug ? ' on' : '')}
+              style={{ fontSize: '11px', padding: '2px 8px', borderColor: '#C1121F' }}
+              onClick={() => pick(u.slug)}>
+              {t(u.name)} ({u.sets}s)
+            </button>
+          ))}
+        </div>
+        <div style={{ fontSize: '11px', color: '#8A8D93' }}>
+          {t('Grounded in logged sets. Not medical advice.')}
+        </div>
+      </div>
+    )}
+
+    {selected && recovery[selected] && (
+      <div className="card" style={{ margin: '10px 0', padding: '10px 14px', background: '#17181C', border: '1px solid rgba(244, 241, 234, 0.08)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+          <span style={{ fontWeight: 600, color: '#F4F1EA' }}>{t(MUSCLE_NAME[selected])} · {t('7-Day Recovery & Volume')}</span>
+          <span style={{
+            fontSize: '11px',
+            padding: '2px 6px',
+            borderRadius: 4,
+            fontWeight: 600,
+            textTransform: 'uppercase',
+            color: recovery[selected].undertrained ? '#C1121F' : recovery[selected].status === 'ready' ? '#2E9E77' : '#F4F1EA',
+            background: recovery[selected].undertrained ? 'rgba(193, 18, 31, 0.15)' : recovery[selected].status === 'ready' ? 'rgba(46, 158, 119, 0.15)' : 'rgba(255, 255, 255, 0.08)',
+          }}>
+            {t(recovery[selected].status)}
+          </span>
+        </div>
+        <div className="small dim" style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginTop: 4 }}>
+          <span>{t('Logged sets (7d): {0}', recovery[selected].sets)}</span>
+          <span>{t('Decayed volume: {0}', recovery[selected].decayedSets)}</span>
+          {recovery[selected].daysSinceLast != null
+            ? <span>{t('Last trained: {0}d ago', recovery[selected].daysSinceLast)}</span>
+            : <span>{t('Never logged')}</span>}
+        </div>
+        {recovery[selected].warning && (
+          <div style={{ marginTop: 6, fontSize: '12px', color: '#C1121F' }}>
+            {recovery[selected].warning}
+          </div>
+        )}
+      </div>
+    )}
 
     {!selected && onPick && <div className="empty"><div className="ico"><Icon name="figureStrength" /></div>{t('Choose a muscle to see exercises that train it.')}</div>}
 

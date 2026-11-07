@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#0B0B0D</color>
+    <color name="colorPrimaryDark">#0B0B0D</color>
+    <color name="colorAccent">#C1121F</color>
+    <color name="toji_void">#0B0B0D</color>
+    <color name="toji_surface">#17181C</color>
+    <color name="toji_blood">#C1121F</color>
+    <color name="toji_jade">#2E9E77</color>
+    <color name="toji_text">#F4F1EA</color>
+    <color name="toji_text_muted">#8E8E93</color>
+</resources>

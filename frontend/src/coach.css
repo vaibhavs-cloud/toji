@@ -309,3 +309,70 @@
 .adapt-ended{display:flex;flex-direction:column;align-items:flex-start;gap:10px}
 .pcard-chg-m{margin-top:4px;line-height:1.4}
 .adapt-reasons .chip{text-transform:none}
+
+/* ---------- Operator Mode & Voice I/O (Ink & Blood) ---------- */
+.partner-mode-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 0 6px;margin-bottom:6px}
+.partner-mode-pill{
+  display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:99px;
+  background:var(--surface);border:1px solid var(--sep);font-size:var(--fs-caption);
+  font-weight:600;letter-spacing:.02em;text-transform:uppercase;color:var(--label-2);
+  transition:border-color var(--fast),color var(--fast)
+}
+.partner-mode-pill.operator{border-color:#C1121F;color:#F4F1EA;background:rgba(193,18,31,0.14)}
+.partner-mode-pill.coach{border-color:#2E9E77;color:#F4F1EA;background:rgba(46,158,119,0.14)}
+
+.voice-tools{display:flex;align-items:center;gap:6px}
+.voice-btn{
+  display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;
+  border-radius:99px;background:var(--surface);border:1px solid var(--sep);
+  color:var(--label-2);transition:all var(--fast);cursor:pointer;flex:none
+}
+.voice-btn:hover{color:var(--label);border-color:var(--label-3)}
+.voice-btn.active{background:rgba(46,158,119,0.18);border-color:#2E9E77;color:#2E9E77}
+.voice-btn.recording{
+  background:rgba(193,18,31,0.22);border-color:#C1121F;color:#C1121F;
+  animation:voice-pulse 1.2s infinite ease-in-out
+}
+
+@keyframes voice-pulse {
+  0%{transform:scale(1);box-shadow:0 0 0 0 rgba(193,18,31,0.4)}
+  50%{transform:scale(1.08);box-shadow:0 0 0 8px rgba(193,18,31,0)}
+  100%{transform:scale(1);box-shadow:0 0 0 0 rgba(193,18,31,0)}
+}
+
+/* Operator Action Proposal Card */
+.operator-card{
+  width:100%;max-width:100%;background:#17181C;border:1.5px solid #2E9E77;
+  border-radius:var(--r-xl);padding:14px 16px;color:#F4F1EA;
+  margin:4px 0;box-shadow:0 4px 16px rgba(0,0,0,0.4)
+}
+.operator-card.danger{border-color:#C1121F}
+.operator-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.operator-tag{
+  font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  padding:2px 8px;border-radius:99px;background:rgba(46,158,119,0.2);color:#2E9E77
+}
+.operator-tag.danger{background:rgba(193,18,31,0.2);color:#C1121F}
+.operator-title{font-size:var(--fs-body);font-weight:700;letter-spacing:-.015em;margin:0 0 4px}
+.operator-desc{font-size:var(--fs-subhead);color:var(--label-2);line-height:1.4;margin:0 0 12px}
+.operator-actions{display:flex;gap:8px;align-items:center}
+.btn-confirm{
+  flex:1;background:#2E9E77;color:#0B0B0D;border:none;border-radius:var(--r);
+  padding:10px 14px;font-weight:700;font-size:var(--fs-subhead);cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:opacity var(--fast)
+}
+.btn-confirm:active{opacity:.85}
+.btn-dismiss{
+  flex:1;background:transparent;color:#F4F1EA;border:1px solid var(--sep);border-radius:var(--r);
+  padding:10px 14px;font-weight:600;font-size:var(--fs-subhead);cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:background var(--fast)
+}
+.btn-dismiss:active{background:var(--surface-2)}
+
+/* Provider Badge in Header */
+.provider-badge{
+  display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;
+  color:#2E9E77;letter-spacing:.02em;background:rgba(46,158,119,0.12);
+  padding:2px 7px;border-radius:99px;margin-top:2px
+}
+

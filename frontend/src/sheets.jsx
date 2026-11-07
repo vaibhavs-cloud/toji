@@ -4105,6 +4105,16 @@ function doFinishWorkout() {
     const rec = is1RMRecord(st, e.id, e)
     if (rec && !prs.includes(e.id)) e1prs.push({ id: e.id, ...rec })
   })
+  if (!past && (prs.length > 0 || e1prs.length > 0)) {
+    const prExId = prs[0] || e1prs[0]?.id
+    const exName = EXIDX[prExId]?.n || 'PR MILESTONE'
+    try {
+      useUI.getState().triggerBlackFlash?.({
+        milestone: 'BLACK FLASH · NEW PR',
+        value: exName,
+      })
+    } catch (e) {}
+  }
   const w = buildCompletedWorkout(A, {
     end: past ? backfillEnd(A) : sessionEnd(A),
     prs,

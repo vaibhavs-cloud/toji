@@ -302,6 +302,14 @@ export const useUI = create((set, get) => ({
   closeSheet(id) { set(s => ({ sheets: s.sheets.filter(x => x.id !== id) })) },
   closeAll() { set({ sheets: [] }) },
 
+  domainTimer: null,
+  openDomainTimer(seconds = 90) { set({ domainTimer: { seconds } }) },
+  closeDomainTimer() { set({ domainTimer: null }) },
+
+  blackFlash: null,
+  triggerBlackFlash(data) { set({ blackFlash: data || { milestone: 'PR BROKEN', value: '' } }) },
+  dismissBlackFlash() { set({ blackFlash: null }) },
+
   // A toast is 2.2 s of text. With an action (`{ action: 'Undo', onAction }`) it stays 5 s, shows
   // the action as a button at its end and holds still while a finger rests on it (pauseToast). A
   // new toast replaces the one showing, action and all: the old Undo is gone, what it would have

@@ -10,6 +10,19 @@
  * pointed it at, so the model has to come from what that endpoint actually serves.
  */
 export const HTTP_PROVIDERS = Object.freeze({
+  nvidia: Object.freeze({
+    label: 'NVIDIA NIM (Recommended)', runtime: 'HTTPS', http: true,
+    apiKeyEnv: 'NVIDIA_API_KEY', oauthEnv: null,
+    defaultBase: 'https://integrate.api.nvidia.com/v1',
+    defaultModel: 'meta/llama-3.1-70b-instruct',
+    recommended: true,
+    models: [
+      'meta/llama-3.1-70b-instruct',
+      'meta/llama-3.1-8b-instruct',
+      'mistralai/mixtral-8x22b-instruct-v0.1'
+    ],
+    keyPlaceholder: 'nvapi-…'
+  }),
   anthropic: Object.freeze({
     label: 'Anthropic API', runtime: 'HTTPS', http: true,
     apiKeyEnv: 'ANTHROPIC_API_KEY', oauthEnv: null,

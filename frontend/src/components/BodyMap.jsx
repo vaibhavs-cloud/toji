@@ -26,12 +26,13 @@ function useBodyPaths() {
   return paths
 }
 
-function View({ view, levels, onMuscle, selected }) {
+function View({ view, levels, onMuscle, selected, warningMuscles = [] }) {
   const activate = (event, slug) => {
     if (event.key !== 'Enter' && event.key !== ' ') return
     if (event.key === ' ') event.preventDefault()
     onMuscle(slug)
   }
+  const isWarn = slug => Array.isArray(warningMuscles) && warningMuscles.includes(slug)
   return (
     <svg className="bm-v" viewBox={view.vb} role={onMuscle ? 'group' : 'img'}>
       {INERT.map(slug => (view.p[slug] || []).map((d, i) =>
@@ -39,7 +40,7 @@ function View({ view, levels, onMuscle, selected }) {
       {MUSCLES.map(slug => (view.p[slug] || []).map((d, i) =>
         <path
           key={slug + i}
-          className={'bm-m l' + (levels[slug] || 0) + (selected === slug ? ' sel' : '')}
+          className={'bm-m l' + (levels[slug] || 0) + (selected === slug ? ' sel' : '') + (isWarn(slug) ? ' warn-undertrained' : '')}
           d={d}
           onClick={onMuscle ? () => onMuscle(slug) : undefined}
           onKeyDown={onMuscle ? event => activate(event, slug) : undefined}
@@ -55,22 +56,23 @@ function View({ view, levels, onMuscle, selected }) {
 }
 
 /**
- * <BodyMap load={{ chest: 12, … }} body="male" />
+ * <BodyMap load={{ chest: 12, … }} body="male" warningMuscles={['trapezius', ...]} />
  * `load` is effective sets per muscle (see lib/muscles.js); shading is relative to
  * the hardest-worked muscle in that same load, so it always reads as a balance. Pass ordered
  * `{ at, level, exclusive? }` `thresholds` for a fixed absolute scale (recovery views use this
  * to keep their semantic bands stable); omitting it preserves the balance behavior. `levels`
  * hands over ready-made steps instead (the live session map, lib/muscles.js sessionLevels).
+ * `warningMuscles` flags undertrained or compromised groups with high-visibility accent outline.
  */
-export default function BodyMap({ load = {}, thresholds, levels: given, body = 'male', onMuscle, selected, className = '' }) {
+export default function BodyMap({ load = {}, thresholds, levels: given, body = 'male', onMuscle, selected, warningMuscles = [], className = '' }) {
   const paths = useBodyPaths()
   const levels = given || levelsOf(load, thresholds)
   const g = paths && (paths[body] || paths.male)
   return (
     <div className={'bodymap ' + className}>
       {g ? <>
-        <View view={g.front} levels={levels} onMuscle={onMuscle} selected={selected} />
-        <View view={g.back} levels={levels} onMuscle={onMuscle} selected={selected} />
+        <View view={g.front} levels={levels} onMuscle={onMuscle} selected={selected} warningMuscles={warningMuscles} />
+        <View view={g.back} levels={levels} onMuscle={onMuscle} selected={selected} warningMuscles={warningMuscles} />
       </> : <div className="bm-ph" aria-hidden="true" />}
     </div>
   )
